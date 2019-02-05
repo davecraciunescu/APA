@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
+#include <device_launch_parameters.h>
 
 /**
   Vector addition (CUDA Kernel) on the device: C = A + B
