@@ -2,8 +2,8 @@
 #include <cstddef>
 #include <assert.h>
 #include <cuda_runtime.h>
-#include <helper_functions.h>
-#include <helper_cuda.h>
+// #include <helper_functions.h>
+// #include <helper_cuda.h>
 
 /**
 * Matrix multiplication (CUDA Kernel) on the device: C = A * B
@@ -76,7 +76,7 @@ void constantInit (float* data, int size, float val)
 /**
 * Run a simple test of CUDA matrix multiplication.
 */
-int matrixMultipy (int argc, char** argv, int block_size, dim3 &dimsA, dim3 &dimsB)
+int matrixMultiply (int argc, char** argv, int block_size, dim3 &dimsA, dim3 &dimsB)
 {
     // Allocate host memory for matrices.
     unsigned int size_A = dimsA.x * dimsA.y;
@@ -172,7 +172,7 @@ int matrixMultipy (int argc, char** argv, int block_size, dim3 &dimsA, dim3 &dim
     // Performs warmup operation.
     if (block_size == 16)
     {
-        matrixMulCUDA<block_size> <<<grid, threads>>> (d_C, d_A, d_B, dimsA.x, dimsB.x);
+        matrixMulCUDA<16> <<<grid, threads>>> (d_C, d_A, d_B, dimsA.x, dimsB.x);
     }
     else
     {
@@ -223,7 +223,7 @@ int matrixMultipy (int argc, char** argv, int block_size, dim3 &dimsA, dim3 &dim
     {
         if (block_size == 16)
         {
-            matrixMulCUDA<block_size> <<<grid, threads>>> (d_C, d_A, d_B, dimsA.x, dimsB.x);
+            matrixMulCUDA<16> <<<grid, threads>>> (d_C, d_A, d_B, dimsA.x, dimsB.x);
         }
         else
         {
@@ -246,7 +246,7 @@ int matrixMultipy (int argc, char** argv, int block_size, dim3 &dimsA, dim3 &dim
     error = cudaEventSynchronize(stop);
     if (error != cudaSuccess)
     {
-        fprintf(stderr, "Failed to synchronize on the stop event (error code %s)!\n"
+        fprintf(stderr, "Failed to synchronize on the stop event (error code%s)!\n",
             cudaGetErrorString(error));
         exit(EXIT_FAILURE);
     }
@@ -269,7 +269,7 @@ int matrixMultipy (int argc, char** argv, int block_size, dim3 &dimsA, dim3 &dim
     if (error != cudaSuccess)
     {
         printf("cudaMemcpy (h_C, d_C) returned error %s (code %d), line(%d)\n",
-            cutaGetErrorString(error));
+            cudaGetErrorString(error));
         exit(EXIT_FAILURE);
     }
 
@@ -303,7 +303,7 @@ int main (int argc, char **argv)
     }
 
     // Pick best possible CUDA device.
-    int dev = findCudaDevide(argc, (const char**) argv);
+    int dev = findCudaDevice(argc, (const char**) argv);
 
     int block_size = 32;
     

@@ -7,13 +7,13 @@
   lA is A's length and lB is B's length.
 */
 __global__ void
-vectorAdd(const float* A, const float* B, float* C, int numElement)
+vectorAdd(const float* A, const float* B, float* C, int numElements)
 {
 	int i = (blockDim.x * blockIdx.x) + threadIdx.x;
 
 	if (i < numElements)
 	{
-		C[i] = A[i] = B[i];
+		C[i] = A[i] + B[i];
 	}
 }
 
@@ -26,8 +26,8 @@ int main (void)
 	cudaError_t error = cudaSuccess;
 
 	// Print the vector length to be used and compute its size.
-	int numElement = 50000;
-	size_t size = numElement * sizeof(float);
+	int numElements = 50000;
+	size_t size = numElements * sizeof(float);
 	printf("Vector Addition of %d elements\n", numElements);
 
 	// Allocate host memory for vectors.
@@ -107,7 +107,7 @@ int main (void)
 	int threadsPerBlock     = 256;
 	int blocksPerGrid	= (numElements + threadsPerBlock - 1) / threadsPerBlock;
 	printf("CUDA Kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-	vectorADD <<<blocksPerGrid, threadsPerBlock>>> (d_A, d_B, d_C, numElements);
+	vectorAdd <<<blocksPerGrid, threadsPerBlock>>> (d_A, d_B, d_C, numElements);
 
 	error = cudaGetLastError();
 	if (error != cudaSuccess)
