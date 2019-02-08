@@ -7,7 +7,7 @@
 /**
     Three integer addition (CUDA Kernel) on global memory.
 */
-__global__ void Addition_kernel(int* a, int* b, int* c, int* d)
+__global__ void Addition(int* a, int* b, int* c, int* d)
 {
     // Perform the Addition operation.
     *d = *a + *b + *c;
@@ -170,5 +170,3 @@ int main()
 
     return EXIT_SUCCESS;
 }
-
-#endif // ADDITION.H
