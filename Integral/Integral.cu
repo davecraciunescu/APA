@@ -10,7 +10,8 @@ __device__ float calculate_gpu(float x)
 
 float calculate_cpu(float x)
 {
-    return sin(1/x) * pow(x,3) / (x+1) * (x+2);
+
+    return cos(pow(x,2) / 2) * pow(x, 3) * sin(pow(x,2)) / pow(x,2) + 3;
 }
 
 __global__ void traps(float* a, float* b, float* h, float* result)
@@ -120,7 +121,14 @@ int main (int argc, char** argv)
     partialSum *= &h;
 
     std::cout << "Resultado Integral con CPU: " << partialSum << std::endl;
-    cudaFree(gpu_result);
+   
+    // Free memory.
+    error = cudaFree(gpu_result);
+    if (error != cudaSuccess)
+    {
+        cudaFreeError("gpu result", error);
+    }
+    
     free(cpu_result);
     return 0;
 }
@@ -140,5 +148,12 @@ void cudaMemcpyError(std::string from, std::string to, cudaError_t msg)
 {
     std::cout << "cudaMemcpy ("<< from << to <<") returned error"<<
     cudaGetErrorString(msg) <<"(code "<< error <<"), line ("<< __LINE__ <<")\n";
+    exit(EXIT_FAILURE);
+}
+
+void cudaFreeError(std::string id, cudaError_t msg)
+{
+    std::cout <<"Failed to free device from "<< id <<" (error code " <<
+        cudaGetErrorString(msg) << ")!\n";
     exit(EXIT_FAILURE);
 }
