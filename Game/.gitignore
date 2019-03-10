@@ -1,0 +1,6 @@
+# CUDA Compilation
+*.exe
+*.exp
+*.lib
+
+
