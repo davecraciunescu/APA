@@ -1,0 +1,45 @@
+\documentclass{article}
+
+\author{Pablo Acereda}
+\title{Artículo sobre Optimizacion mediante Gradiente y Poblaciones}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+El mayor problema a la hora de realizar la optimización de un sistema, ya sea
+desde la superficie y forma de una antena o circuitos de microondas, ha sido 
+debido a la creciente escala y tamaño de los mismos. Siendo el principal
+problema la alta dimensionalidad y la falta de linearidad en los supuestos
+presentados como materia de optimización.
+
+Con el propósito de mejorar los procesos que llevan a resultados mejores,
+minimizando o maximizando funciones de coste, se han empleado numerosos
+algorítmos (como el uso de gradientes, poblaciones evolutivas, etc.); incluso 
+la hibridación de varios de estos algoritmos. Dentro de los numerosos 
+algoritmos de reducción de costes se puede encontrar, entre los más usados, 
+la optimización mediante gradientes (aunque no son del todo óptimos a la 
+hora de enfrentar espacios con funciones de coste no lineales).
+
+
+A causa del auge desenfrenado de los datos a tratar, este algoritmo se ve
+afectado de manera negativa; por lo que en este paper se propone el GPO
+(Gradient Population Optimization) como algoritmo eficiente que resuelve el
+dilema planteado, y que se acrecentará en los años venideros.
+
+
+Se emplea como arquitectura de ejecución una arquitectura del tipo 
+no-von-Neumann y empleado el framework TensorFlow (TF). El algoritmo puede ser
+implementado en terminales que cuenten con CPU multi-core, GPUs, FPGA
+(field-programmable gate array o matriz de puertas programables en castellano) o
+incluso unidades de procesamiento cuántico.
+
+La implementación básica surge de un mecanismo híbrido de optimización local
+(cognitivo) y global (social), encontrado en el paradigma de búsqueda aleatoria 
+multi-agente (population). Cabe decir que, se ha sustituído el operados social
+por un operador gradiente; y una interacción entre los operadores locales y
+globales.
+\end{document}
+
