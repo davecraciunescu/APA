@@ -14,7 +14,6 @@
 // Time
 #include <time.h>
 
-
 // Size of the tile to be used
 #define TILE_WIDTH 1
 
@@ -24,13 +23,13 @@ int cellsOccupied = 0;
 // -----------------------------------------------------------------------------
 // ------------------------------- HEADERS -------------------------------------
 // -----------------------------------------------------------------------------
-cudaError_t sendMatrixToGpu(int row, int column, int* matrix);
+cudaError_t sendMatrixToGpu(char movement, int row, int column, int* matrix);
 
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
 // -----------------------------------------------------------------------------
-/* TODO:
-__global__ computeMatrixUp(int rows, int columns, int* matrix)
+// TODO
+/*__global__ computeMatrixUp(int rows, int columns, int* matrix)
 {
     // Matrix dimensions
     int bx = blockIdx.x;  int by = blockIdx.y;
@@ -54,51 +53,92 @@ __global__ computeMatrixUp(int rows, int columns, int* matrix)
  * matrix: The matrix which is going to be filled
  * movement: Movement performed by the user (w, s, a, d)
  */
-// TODO
 __global__ void fillSpace(int* matrix, char movement, int rows, int columns)
 {
     // Matrix dimensions
-    int bx = blockIdx.x;  int by = blockIdx.y;
-    int tx = threadIdx.x; int ty = threadIdx.y;
+    int bx = blockIdx.x;  
+    int tx = threadIdx.x; 
 
     // Location in matrix
-    int row = by * TILE_WIDTH + ty;
-    int col = bx * TILE_WIDTH + tx;
+    int pos = bx * TILE_WIDTH + tx;
     
     switch(movement)
     {
         // Up
         case 'w':
-            // From las row to first row
+            // From last row to first row
             for(int i = rows - 1; i > 0; i--)
             {
-                for(int j = i; j > 0; j--)
+                for(int j = rows - 1; j > 0; j--)
                 {
                     // Current cell NOT 0 and upper cell IS 0 ->
                     // moves current cell up
-                    if(matrix[j *     rows + col] != 0 &&
-                       matrix[(j - 1) * rows + col] == 0)
+                    if(matrix[j *     rows + pos] != 0 &&
+                       matrix[(j - 1) * rows + pos] == 0)
                     {
-                        matrix[(j - 1) * rows + col] = matrix[j * rows + col];
-                        matrix[j * rows + col] = 0;
+                        matrix[(j - 1) * rows + pos] = matrix[j * rows + pos];
+                        matrix[j * rows + pos] = 0;
                     }
                 }
             }
             break;
 
-        // TODO
         // Down
         case 's':
+            // From first row to last row
+            for(int i = 0; i < rows; i++)
+            {
+                for(int j = 0; j < rows - 1; j++)
+                {
+                    // Current cell NOT 0 and lower cell IS 0 ->
+                    // moves current cell down
+                    if(matrix[j *     rows + pos] != 0 &&
+                       matrix[(j + 1) * rows + pos] == 0)
+                    {
+                        matrix[(j + 1) * rows + pos] = matrix[j * rows + pos];
+                        matrix[j * rows + pos] = 0;
+                    }
+                }
+            }
             break;
 
-        // TODO
         // Left
         case 'a':
+            // From last row to first row
+            for(int i = columns - 1; i > 0; i--)
+            {
+                for(int j = columns - 1; j > 0; j--)
+                {
+                    // Current cell NOT 0 and upper cell IS 0 ->
+                    // moves current cell up
+                    if(matrix[pos * rows +  j]      != 0 &&
+                       matrix[pos * rows + (j - 1)] == 0)
+                    {
+                        matrix[pos * rows + (j - 1)] = matrix[pos * rows + j];
+                        matrix[pos * rows +  j] = 0;
+                    }
+                }
+            }
+            
             break;
 
-        // TODO
         //  Right
         case 'd':
+            // From first row to last row
+            for(int i = 0; i < columns; i++)
+            {
+                for(int j = 0; j < columns - 1; j++)
+                {
+                    // Current cell NOT 0 and lower cell IS 0 ->
+                    // moves current cell down
+                    if(matrix[pos * rows + j]       != 0 &&
+                       matrix[pos * rows + (j + 1)] == 0)
+                    {
+                        matrix[pos * rows + (j + 1)] = matrix[pos * rows + j];
+                        matrix[pos * rows +  j] = 0;
+                    }
+                }
+            }
             break;
     }
 
@@ -157,27 +197,52 @@ __host__ int getThreadsBlock()
 __host__ void displayGrid(int rows, int columns, int* Matrix)
 {
     system("clear");
-   
-    std::cout << std::endl;
 
-    for(int i = 0; i < rows; i++)
+    /*std::cout << 
+        "--------------------------------------------------------------------------------"
+        << std::endl;
+    std::cout << "16384" << std::endl;    
+    std::cout << 
+        "--------------------------------------------------------------------------------"
+        << std::endl << std::endl;
+    */
+    // Two extra iterations to print the upper part of the matrix
+    for(int i = -2; i < rows; i++)
     {
-        std::cout << "| ";
+        if(i < 0) {
+            std::cout << "      ";
+        } else if(i + 1 < 10) {
+            std::cout << i + 1 << " - | ";
+        } else if(i + 1 >= 10) {
+            std::cout << i + 1 << "- | ";
+        }
 
         for(int j = 0; j < columns; j++)
         {
-            std::cout << Matrix[i * rows + j] << " | ";
+            if(i == -2) {
+                if(j + 1 < 10) {
+                    std::cout << j + 1 << "   ";
+                } else {
+                    std::cout << j + 1 << "  ";
+                }
+            } else if(i == -1) {
+                std::cout << "|   "; 
+            } else  {
+                std::cout << Matrix[i * rows + j] << " | ";
+            }
         }
 
-        std::cout << std::endl << std::endl;
+        std::cout << std::endl;
     }
+
+    std::cout << std::endl;
 
     std::cout <<                          std::endl 
               <<                          std::endl 
               << "Controls: "          << std::endl
-              << "         _"          << std::endl
+              << "        ___"         << std::endl
               << "       | W |"        << std::endl
-              << "  _      _      _"   << std::endl
+              << " ___    ___    ___"  << std::endl
               << "| A |  | S |  | D |" << std::endl
               <<                          std::endl;
 }
@@ -261,13 +326,15 @@ int main(int argc, char** argv)
     int  numColumns;
     // Board Maximum Number of Cells
     int  numMaxThreads;  
-    
+    // Used as auxiliary variable for any input in the system
+    std::string input;
+
     system("clear");
     std::cout << "Processing game settings" << std::endl;
 
     if(argc == 5)
     {
-        std::string input = argv[1];
+        input = argv[1];
         
         // --------------------------------------------------------------------
         // --------------------------- PLAYING MODE ---------------------------
@@ -360,22 +427,30 @@ int main(int argc, char** argv)
         } 
     
         int* Matrix = (int*) calloc(numRows * numColumns, sizeof(int));
-      
-        // TODO:
-        // Once the testing is over, goddamn delete this shit and write it where
-        // it belongs, CRACKER
-        displayGrid(numRows, numColumns, Matrix);       
+     
+        bool play;
+
         seeding(difficulty, numRows, numColumns, Matrix);
-        sendMatrixToGpu(numRows, numColumns, Matrix);
-        displayGrid(numRows, numColumns, Matrix);        
-    
+        displayGrid(numRows, numColumns, Matrix);
+        
+        do {
+            std::cin >> input;
+
+            if(input.length() == 1) {
+                sendMatrixToGpu(input[0], numRows, numColumns, Matrix);
+                displayGrid(numRows, numColumns, Matrix);
+            } else {
+                std::cout << "not that one cracker!" << std::endl;
+            }
+        } while(play);
+
     }
 }
 
 // -----------------------------------------------------------------------------
 // ----------------------------- CUDA METHODS-----------------------------------
 // -----------------------------------------------------------------------------
-cudaError_t sendMatrixToGpu(int row, int column, int* matrix)
+cudaError_t sendMatrixToGpu(char movement, int row, int column, int* matrix)
 {
     // Variable to operate in the GPU
     int* dev_matrix = 0;
@@ -397,16 +472,30 @@ cudaError_t sendMatrixToGpu(int row, int column, int* matrix)
     cudaMemcpy(dev_matrix, matrix, row * column * sizeof(int),
                cudaMemcpyHostToDevice);
     check_CUDA_Error("cudaMemCpy failed at Matrix!\n");
-
-    // TODO: Description
-    // TODO: Kernel
-
-    // TODO: Insert appropiate failed text for kernel
-    // check_CUDA_Error("");
-   
-    // Finde proper place to place it xD
-    fillSpace<<<1, column>>>(dev_matrix, 'w', row, column);
+    
+    /*
+     * If the movement is UP or DOWN:
+     *     The number of threads is the number of columns.
+     * If the movement is LEFT or RIGHT 
+     *     The number of threads is the number fo rows.
+     */
+    if(movement == 'w' || movement == 's')
+    {
+        fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+    } 
+    else if(movement == 'a' || movement == 'd')
+    {
+        fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+    }
     check_CUDA_Error("Error while gathering cells\n");
+
+    // Waits for kernel to finish
+    cudaDeviceSynchronize();
+    check_CUDA_Error("cudaDeviceSynchronize returned error!");
+
+    // Computes the matrix joining the numbers with the same values
+    //computeMatrixUp<<<, >>>(rows, columns, dev_matrix);   
+    //check_CUDA_Error("Error after trying to mix cells!\n");
 
     // Waits for kernel to finish
     cudaDeviceSynchronize();
