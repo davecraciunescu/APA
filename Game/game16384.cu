@@ -9,14 +9,104 @@
 #include <string>
 // C++ library for I/O 
 #include <iostream>
-// Calloc, exit, free
+// Calloc, exit, free, rand
 #include <stdlib.h>
+// Time
+#include <time.h>
+
+
+// Size of the tile to be used
+#define TILE_WIDTH 1
+
+// Number which allows to know if the matrix is fully occupied
+int cellsOccupied = 0;
 
 // -----------------------------------------------------------------------------
 // ------------------------------- HEADERS -------------------------------------
 // -----------------------------------------------------------------------------
 cudaError_t sendMatrixToGpu(int row, int column, int* matrix);
 
+// -----------------------------------------------------------------------------
+// ------------------------------- KERNELS -------------------------------------
+// -----------------------------------------------------------------------------
+/* TODO:
+__global__ computeMatrixUp(int rows, int columns, int* matrix)
+{
+    // Matrix dimensions
+    int bx = blockIdx.x;  int by = blockIdx.y;
+    int tx = threadIdx.x; int ty = threadIdx.y;
+
+    // Location in matrix
+    int row =    by * TILE_WIDTH + ty;
+    int column = bx * TILE_WIDTH + tx;
+
+    if(row < rows && column < columns)
+    {
+        
+    }
+
+}
+*/
+
+/*
+ * Fills the empty spaces in the matrix
+ *
+ * matrix: The matrix which is going to be filled
+ * movement: Movement performed by the user (w, s, a, d)
+ */
+// TODO
+__global__ void fillSpace(int* matrix, char movement, int rows, int columns)
+{
+    // Matrix dimensions
+    int bx = blockIdx.x;  int by = blockIdx.y;
+    int tx = threadIdx.x; int ty = threadIdx.y;
+
+    // Location in matrix
+    int row = by * TILE_WIDTH + ty;
+    int col = bx * TILE_WIDTH + tx;
+    
+    switch(movement)
+    {
+        // Up
+        case 'w':
+            // From las row to first row
+            for(int i = rows - 1; i > 0; i--)
+            {
+                for(int j = i; j > 0; j--)
+                {
+                    // Current cell NOT 0 and upper cell IS 0 ->
+                    // moves current cell up
+                    if(matrix[j *     rows + col] != 0 &&
+                       matrix[(j - 1) * rows + col] == 0)
+                    {
+                        matrix[(j - 1) * rows + col] = matrix[j * rows + col];
+                        matrix[j * rows + col] = 0;
+                    }
+                }
+            }
+            break;
+
+        // TODO
+        // Down
+        case 's':
+            break;
+
+        // TODO
+        // Left
+        case 'a':
+            break;
+
+        // TODO
+        //  Right
+        case 'd':
+            break;
+    }
+
+}
+
+// -----------------------------------------------------------------------------
+// -------------------------- CUDA RELATED METHODS -----------------------------
+// -----------------------------------------------------------------------------
 // Method which allows to check for errors
 __host__ void check_CUDA_Error(const char *msg)
 {
@@ -28,7 +118,7 @@ __host__ void check_CUDA_Error(const char *msg)
 
     if(err != cudaSuccess)
     {
-        std::cerr << "ERROR " << err << "OCURRED: " << cudaGetErrorString(err)  
+        std::cerr << "ERROR " << err << " OCURRED: " << cudaGetErrorString(err)  
                   << "(" << msg << ")" << std::endl;
         std::cerr << "Press any key to finish execution..." << std::endl;
         fflush(stdin);
@@ -49,7 +139,7 @@ __host__ int getThreadsBlock()
     cudaGetDeviceCount(&nDevices);
     check_CUDA_Error("Couldn't get the number of devices in this computer");
 
-    if(cnDevices > 0)
+    if(nDevices > 0)
     {
         cudaDeviceProp prop;
         
@@ -64,7 +154,7 @@ __host__ int getThreadsBlock()
 // -----------------------------------------------------------------------------
 // ------------------------------ GAME METHODS ---------------------------------
 // -----------------------------------------------------------------------------
-void displayGrid(int rows, int columns, int* Matrix)
+__host__ void displayGrid(int rows, int columns, int* Matrix)
 {
     system("clear");
    
@@ -92,6 +182,69 @@ void displayGrid(int rows, int columns, int* Matrix)
               <<                          std::endl;
 }
 
+__host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix)
+{
+    // Number of seeds to be planted in the board
+    int seeds;
+    // Values the seeds might have while inserted
+    int* seedsValues;
+    // Number of seeds planted 
+    int seedsPlanted = 0;
+    // Position from the matrix where the seed is going to be planted. 
+    // Used auxiliary variable
+    int position;
+
+    // Depending on the game difficulty, the number of seeds may vary
+    switch(gameDifficulty)
+    {
+        case 1:
+            seeds = 15;
+            seedsValues = (int*) calloc(3, sizeof(int));
+            seedsValues[0] = 2;
+            seedsValues[1] = 4;
+            seedsValues[2] = 8;
+            break;
+
+        case 2:
+            seeds = 8;
+            seedsValues = (int*) calloc(2, sizeof(int));
+            seedsValues[0] = 2;
+            seedsValues[1] = 4;
+            break;
+    }
+
+    // Initialize random seed
+    std::srand(time(0));
+
+    while(seedsPlanted < seeds)
+    {
+        // Still empty cells
+        if(cellsOccupied < (rows * columns - 1))
+        {
+        // Position within the matrix
+        position = rand() % ((rows * columns) - 1);
+
+        if(matrix[position] == 0)
+        {
+                // Random seed value among the ones according to the difficulty
+                matrix[position] = seedsValues[rand() % 
+                                               (sizeof(seedsValues) 
+                                                / sizeof(int) 
+                                                - 1)];
+                seedsPlanted++;
+            }
+        } 
+        else
+        {
+            std::cout << "There are no more empty cells, you have lost a live"  << std::endl;
+            // TODO:
+            // Probably it would be needed decrease the number of lives
+            // Therefore, it is needed a new method for that, called here
+        }
+
+    }
+
+}
 
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
@@ -99,15 +252,15 @@ void displayGrid(int rows, int columns, int* Matrix)
 int main(int argc, char** argv)
 {
     // Game Mode
-    std::string mode;
+    char mode;
     // Game Difficulty
-    std::string dificulty;
+    int  difficulty;
     // Board Height
-    int         numRows;
+    int  numRows;
     // Board Weight
-    int         numColumns;
+    int  numColumns;
     // Board Maximum Number of Cells
-    int         numMaxThreads;  
+    int  numMaxThreads;  
     
     system("clear");
     std::cout << "Processing game settings" << std::endl;
@@ -126,6 +279,7 @@ int main(int argc, char** argv)
                       << " MANUAL MODE COMPLETED 100% " 
                       << "-------------------------------"
                       << std::endl;
+            mode = 'm';
         } else if (input.compare("a"))
         {
             std::cout << "Setting to AUTOMATIC" << std::endl;
@@ -133,6 +287,7 @@ int main(int argc, char** argv)
                       << " AUTOMATIC MODE COMPLETED 100% " 
                       << "------------------------------"
                       << std::endl;
+            mode = 'a';
         } else 
         {
             std::cout <<"There was an error while parsing the input."
@@ -141,6 +296,7 @@ int main(int argc, char** argv)
                       << std::endl
                       << "Try writing:\nm: manual\na: automatic"
                       << std::endl;
+            exit(0);
         }
 
         input = argv[2];
@@ -154,7 +310,7 @@ int main(int argc, char** argv)
                       << " EASY MODE COMPLETED 100% " 
                       << "--------------------------------"
                       << std::endl;
-            
+            difficulty = 1;
         } else if (input.compare("2"))
         {
 
@@ -163,6 +319,7 @@ int main(int argc, char** argv)
                       << " HARD MODE COMPLETED 100% " 
                       << "--------------------------------"
                       << std::endl;
+            difficulty = 2;
         } else 
         {
             std::cout << "There was an error while parsing the input." 
@@ -171,6 +328,7 @@ int main(int argc, char** argv)
                       << std::endl
                       << "Try writing:\n1: easy\n2: hard" 
                       << std::endl;
+            exit(0);
         }
 
         // -------------------------------------------------------------------
@@ -198,27 +356,34 @@ int main(int argc, char** argv)
             std::cout << "The board is too big, please specify other board size."
                       << "The maximum number of cells is " << numMaxThreads
                       << std::endl;
-        }
+            exit(0);
+        } 
     
         int* Matrix = (int*) calloc(numRows * numColumns, sizeof(int));
-
+      
+        // TODO:
+        // Once the testing is over, goddamn delete this shit and write it where
+        // it belongs, CRACKER
+        displayGrid(numRows, numColumns, Matrix);       
+        seeding(difficulty, numRows, numColumns, Matrix);
+        sendMatrixToGpu(numRows, numColumns, Matrix);
         displayGrid(numRows, numColumns, Matrix);        
-
+    
     }
 }
 
 // -----------------------------------------------------------------------------
 // ----------------------------- CUDA METHODS-----------------------------------
 // -----------------------------------------------------------------------------
-sendMatrixToGpu(int row, int column, int* matrix)
+cudaError_t sendMatrixToGpu(int row, int column, int* matrix)
 {
     // Variable to operate in the GPU
     int* dev_matrix = 0;
     
-    // TODO: Set Kernel dimensions
+    // TODO: Set Kernel dimensions correctly, probably need a TILE_WIDTH
     // GPU threads distribution
-    dim3 dimGrid();
-    dim3 dimBlock();
+    dim3 dimGrid(row, column, 1);
+    dim3 dimBlock(1, 1);
 
     // Selection of the GPU were code is to be executed
     cudaSetDevice(0);
@@ -237,8 +402,11 @@ sendMatrixToGpu(int row, int column, int* matrix)
     // TODO: Kernel
 
     // TODO: Insert appropiate failed text for kernel
-    check_CUDA_Error("");
-
+    // check_CUDA_Error("");
+   
+    // Finde proper place to place it xD
+    fillSpace<<<1, column>>>(dev_matrix, 'w', row, column);
+    check_CUDA_Error("Error while gathering cells\n");
 
     // Waits for kernel to finish
     cudaDeviceSynchronize();
@@ -251,6 +419,4 @@ sendMatrixToGpu(int row, int column, int* matrix)
 
     return cudaGetLastError();
 }
-
-
 
