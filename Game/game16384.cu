@@ -509,21 +509,6 @@ __host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix,
 // -----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    // Variables needed within the game
-    int lives = 5;   int* LIVES  =         &lives;
-    int points = 0;  int* POINTS =         &points; 
-    int cellsOc = 0; int* CELLS_OCCUPIED = &cellsOc;
-
-    // Game Mode
-    char mode;
-    // Game Difficulty
-    int  difficulty;
-    // Board Height
-    int  numRows;
-    // Board Weight
-    int  numColumns;
-    // Board Maximum Number of Cells
-    int  numMaxThreads;  
     // Used as auxiliary variable for any input in the system
     std::string input;
 
@@ -625,30 +610,155 @@ int main(int argc, char** argv)
                       << std::endl;
             exit(0);
         } 
-    
-        int* Matrix = (int*) calloc(numRows * numColumns, sizeof(int));
-     
-        bool play;
-
-        seeding(difficulty, numRows, numColumns, Matrix, CELLS_OCCUPIED);
-        displayGrid(numRows, numColumns, Matrix, POINTS, LIVES, CELLS_OCCUPIED);
-        
-        do {
-            std::cin >> input;
-
-            if(input.length() == 1) 
-            {
-                cellsMerge(input[0], numRows, numColumns, Matrix, 
-                           POINTS, CELLS_OCCUPIED);
-                seeding(difficulty, numRows, numColumns, Matrix, CELLS_OCCUPIED);
-                displayGrid(numRows, numColumns, Matrix, POINTS, LIVES,
-                            CELLS_OCCUPIED);
-            } else {
-                std::cout << "not that one cracker!" << std::endl;
-            }
-        } while(play);
-
+       
+        // EXECUTE GAME.
+        playGame(difficulty, numRows, numColumns, numMaxThreads);
     }
+}
+
+// MAIN METHOD OF THE GAME.
+void playGame (
+    int  difficulty,    // Difficulty of the game.
+    int  numRows,       // Number of rows in the game.
+    int  numColumns,    // Number of columns in the game.
+    int  numMaxThreads  // Number of max threads to be run.
+    )
+{
+    // Auxiliary input variable.
+    std::string input;
+
+    // Variables needed within the game.
+    int   lives = 5;    int* LIVES          = &lives;
+    int  points = 0;    int* POINTS         = &points;
+    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc; 
+
+    char    mode; // Game Mode.
+
+    int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
+    bool      playing = true;
+    bool  keepPlaying = true;
+    bool       winner = true;
+
+    // MAIN GAME LOOP.
+    while (keepPlaying)
+    {   
+        // SEED GAME INITIAL STATE.
+        seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
+        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELL_OCCUPIED);
+
+        std::cout << "Starting Game." << std::endl;
+
+        if (lives > 0)
+        {
+            while (playing)
+            {
+                std::cin >> input;
+
+                if (input.length == 1)
+                {
+                    switch (input[0])
+                    {
+                        case 'g':
+                            // TODO SAVE GAME.
+                        break;
+                        
+                        case 'q':
+                            playing         = false;
+                            keep_playing    = false;
+                            winner          = false;
+                        break;
+                        
+                        default:
+                            if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                            {
+                                cellsMerge(input[0], numRows, numColumns, matrix,
+                                    POINTS, CELLS_OCCUPIED);
+                                seeding(difficulty, numRows, numColumns, matrix,
+                                    CELLS_OCCUPIED);
+                                displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
+                                    CELLS_OCCUPIED);
+                            }
+                            else
+                            {
+                                // Take away one life.
+                                lives--;
+                                playing = false;
+                            }
+                        break;
+                    }
+                }
+                else
+                {
+                    std:: cout << "Not that one, cracker!" << std::endl;
+                }
+            }
+        }
+        else
+        {
+            keep_playing = false;
+        }
+
+        // CHECK IF USER CAN AND WILL PLAY AGAIN.
+
+        if (lives > 0)
+        {
+            keepPlaying = playAgain(lives); // Ask user if will play again.
+        }
+        else
+        {
+            std::cout << "You have 0 lives. GAME OVER." << std::endl;
+            keep_playing = false;
+        }
+    }
+
+    // Reset the value of winner.
+    winner = true;
+}
+
+/**
+* Asks user if will play again.
+*/
+bool playAgain(int lives)
+{
+    bool willPlayAgain = false;
+
+    std::cout << "You currently have: " << lives << " lives." << std::endl;
+    std::cout << "Do you want to play again (y/n).";
+
+    std::string input;
+    std::cin >> input;
+
+    bool invalid = true;
+
+    while (invalid)
+    {
+        if (input.length == 1)
+        {
+            switch(input[0])
+            {
+                case 'y':
+                    std::cout << "Alright, playing again." << std::endl;
+                    willPlayAgain   = true;
+                    invalid         = false;
+                    break;
+                
+                case 'n':
+                    std::cout << "Thanks for playing." << std::endl;
+                    invalid         = false;
+                    break;
+                
+                default:
+                    std::cout << "Please enter a valid value." << std::endl;
+                    std::cout << "Do you want to play again (y/n).";
+                    break;
+            }
+        }
+        else
+        {
+            std::cout << "Please enter a valid value." << std::endl;
+        }
+    }
+    return willPlayAgain;
 }
 
 // -----------------------------------------------------------------------------
