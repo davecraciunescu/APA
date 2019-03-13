@@ -692,22 +692,14 @@ void playGame (
                     std:: cout << "Not that one, cracker!" << std::endl;
                 }
             }
+
+            // ASK USER IF WANTS TO PLAY AGAIN.
+            keepPlaying = playAgain(lives);
         }
         else
         {
-            keep_playing = false;
-        }
-
-        // CHECK IF USER CAN AND WILL PLAY AGAIN.
-
-        if (lives > 0)
-        {
-            keepPlaying = playAgain(lives); // Ask user if will play again.
-        }
-        else
-        {
-            std::cout << "You have 0 lives. GAME OVER." << std::endl;
-            keep_playing = false;
+            std::cout << "You have 0 lives. GAMEOVER." << std::endl;
+            keepPlaying = false;
         }
     }
 
