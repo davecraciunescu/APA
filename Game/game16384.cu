@@ -9,43 +9,140 @@
 #include <string>
 // C++ library for I/O 
 #include <iostream>
-// Calloc, exit, free, rand
+// Calloc, exit, free
 #include <stdlib.h>
+// Rand
+#include <cstdlib>
 // Time
 #include <time.h>
+// Graphics
+#include <conio.h>
+#include <windows.h>
+
 
 // Size of the tile to be used
 #define TILE_WIDTH 1
 
-// Number which allows to know if the matrix is fully occupied
-int cellsOccupied = 0;
-
 // -----------------------------------------------------------------------------
 // ------------------------------- HEADERS -------------------------------------
 // -----------------------------------------------------------------------------
-cudaError_t sendMatrixToGpu(char movement, int row, int column, int* matrix);
+cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
+                       int* POINTS, int* CELLS_OCCUPIED);
 
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
 // -----------------------------------------------------------------------------
-// TODO
-/*__global__ computeMatrixUp(int rows, int columns, int* matrix)
+__global__ void computeMatrixUp(int numRows, int numColumns, int* matrix,
+                                int* POINTS, int* CELLS_OCCUPIED)
 {
     // Matrix dimensions
-    int bx = blockIdx.x;  int by = blockIdx.y;
-    int tx = threadIdx.x; int ty = threadIdx.y;
+    int bx = blockIdx.x;
+    int tx = threadIdx.x;
 
     // Location in matrix
-    int row =    by * TILE_WIDTH + ty;
-    int column = bx * TILE_WIDTH + tx;
+    int col = bx * TILE_WIDTH + tx;
 
-    if(row < rows && column < columns)
+    if(col < numColumns)
     {
-        
+        // TODO: Probably will need to change the numRows if TILES or shared 
+        // used
+        for(int i = 0; i < numRows - 1; i++)
+        {
+            if(matrix[i * numRows + col] > 0 && 
+               matrix[i * numRows + col] == matrix[(i + 1) * numRows + col])
+            {
+                matrix[i * numRows + col] *= 2;
+                matrix[(i + 1) * numRows + col] = 0;
+                (*POINTS) += matrix[i * numRows + col];
+                (*CELLS_OCCUPIED)--;
+            }
+        }
     }
-
 }
-*/
+
+__global__ void computeMatrixDown(int numRows, int numColumns, int* matrix,
+                                  int* POINTS, int* CELLS_OCCUPIED)
+{
+    // Matrix dimensions
+    int bx = blockIdx.x;  
+    int tx = threadIdx.x;
+
+    // Location in matrix
+    int col = bx * TILE_WIDTH + tx;
+
+    if(col < numColumns)
+    {
+        // TODO: Probably will need to change the numRows if TILES or shared 
+        // used
+        for(int i = numRows - 1; i > 0; i--)
+        {
+            if(matrix[i * numRows + col] > 0 && 
+               matrix[i * numRows + col] == matrix[(i - 1) * numRows + col])
+            {
+                matrix[i * numRows + col] *= 2;
+                matrix[(i - 1) * numRows + col] = 0;
+                (*POINTS) += matrix[i * numRows + col];
+                (*CELLS_OCCUPIED)--;
+            }
+        }
+    }
+}
+
+__global__ void computeMatrixLeft(int numRows, int numColumns, int* matrix,
+                                  int* POINTS, int* CELLS_OCCUPIED)
+{
+    // Matrix dimensions
+    int bx = blockIdx.x;
+    int tx = threadIdx.x;
+
+    // Location in matrix
+    int row = bx * TILE_WIDTH + tx;
+
+    if(row < numRows)
+    {
+        // TODO: Probably will need to change the numRows if TILES or shared 
+        // used
+        for(int i = 0; i < numColumns - 1; i++)
+        {
+            if(matrix[row * numRows + i] > 0 && 
+               matrix[row * numRows + i] == matrix[row * numRows + (i + 1)])
+            {
+                matrix[row * numRows + i] *= 2;
+                matrix[row * numRows + (i + 1)] = 0;
+                (*POINTS) += matrix[row * numRows + i];
+                (*CELLS_OCCUPIED)--;
+            }
+        }
+    }
+}
+
+__global__ void computeMatrixRight(int numRows, int numColumns, int* matrix,
+                                   int* POINTS, int* CELLS_OCCUPIED)
+{
+    // Matrix dimensions
+    int bx = blockIdx.x;  
+    int tx = threadIdx.x;
+
+    // Location in matrix
+    int row = bx * TILE_WIDTH + tx;
+
+    if(row < numRows)
+    {
+        // TODO: Probably will need to change the numRows if TILES or shared 
+        // used
+        for(int i = numColumns - 1; i > 0; i--)
+        {
+            if(matrix[row * numRows + i] > 0 && 
+               matrix[row * numRows + i] == matrix[row * numRows + (i - 1)])
+            {
+                matrix[row * numRows + i] *= 2;
+                matrix[row * numRows + (i - 1)] = 0;
+                (*POINTS) += matrix[row * numRows + i];
+                (*CELLS_OCCUPIED)--;
+            }
+        }
+    }
+}
 
 /*
  * Fills the empty spaces in the matrix
@@ -158,9 +255,9 @@ __host__ void check_CUDA_Error(const char *msg)
 
     if(err != cudaSuccess)
     {
-        std::cerr << "ERROR " << err << " OCURRED: " << cudaGetErrorString(err)  
+        std::cout << "ERROR " << err << " OCURRED: " << cudaGetErrorString(err)  
                   << "(" << msg << ")" << std::endl;
-        std::cerr << "Press any key to finish execution..." << std::endl;
+        std::cout << "Press any key to finish execution..." << std::endl;
         fflush(stdin);
 
         char key = getchar();
@@ -194,41 +291,128 @@ __host__ int getThreadsBlock()
 // -----------------------------------------------------------------------------
 // ------------------------------ GAME METHODS ---------------------------------
 // -----------------------------------------------------------------------------
-__host__ void displayGrid(int rows, int columns, int* Matrix)
+__host__ void displayGrid(int rows, int columns, int* Matrix, 
+                          int* POINTS, int* LIVES, int* CELLS_OCCUPIED)
 {
     system("clear");
 
-    /*std::cout << 
-        "--------------------------------------------------------------------------------"
-        << std::endl;
-    std::cout << "16384" << std::endl;    
-    std::cout << 
-        "--------------------------------------------------------------------------------"
-        << std::endl << std::endl;
-    */
     // Two extra iterations to print the upper part of the matrix
     for(int i = -2; i < rows; i++)
     {
         if(i < 0) {
             std::cout << "      ";
         } else if(i + 1 < 10) {
-            std::cout << i + 1 << " - | ";
+            std::cout << i + 1 << " - ";
         } else if(i + 1 >= 10) {
-            std::cout << i + 1 << "- | ";
+            std::cout << i + 1 << "- ";
         }
 
         for(int j = 0; j < columns; j++)
         {
             if(i == -2) {
                 if(j + 1 < 10) {
-                    std::cout << j + 1 << "   ";
+                    std::cout << j + 1 << "    ";
                 } else {
-                    std::cout << j + 1 << "  ";
+                    std::cout << j + 1 << "   ";
                 }
             } else if(i == -1) {
-                std::cout << "|   "; 
+                std::cout << "|    "; 
             } else  {
-                std::cout << Matrix[i * rows + j] << " | ";
+                std::cout << "| " << Matrix[i * rows + j] << " |";
+
+                /*
+                switch(Matrix[i * rows + j])
+                {
+                    // WHITE
+                    case 2:
+                        //SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                        //                        15);
+                        
+                        std::cout << "\033[;| " << Matrix[i * rows + j] << " |";
+                        break;
+                    
+                    // LIGHTGRAY
+                    case 4:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                7);
+                        break;
+                    
+                    // DARKGRAY
+                    case 8:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                8);
+                        break;
+                    
+                    // YELLOW
+                    case 16:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                14);
+                        break;
+
+                    // LIGHTMAGENTA
+                    case 32:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                13);
+                        break;
+                    
+                    // MAGENTA
+                    case 64:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                5);
+                        break;
+
+                    // LIGHTRED
+                    case 128:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                12);
+                        break;
+
+                    // RED
+                    case 256:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                4);
+                        break;
+
+                    // BROWN
+                    case 512:
+                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+                                                6);
+                        break;
+
+                    // LIGHTGREEN
+                    case 1024:
+                        Setconsoletextattribute(getstdhandle(std_output_handle),
+                                                10);
+                        break;
+
+                    // GREEN
+                    case 2048:
+                        Setconsoletextattribute(getstdhandle(std_output_handle),
+                                                2);
+                        break;
+                    
+                    // LIGHTCYAN
+                    case 4096:
+                        Setconsoletextattribute(getstdhandle(std_output_handle),
+                                                11);
+                        break;
+
+                    // CYAN
+                    case 8192:
+                        Setconsoletextattribute(getstdhandle(std_output_handle),
+                                                3);
+                        break;
+                    // LIGHTBLUE
+                    case 16384:
+                        Setconsoletextattribute(getstdhandle(std_output_handle),
+                                                9);
+                        break;
+                    
+                    default:
+                       // Setconsoletextattribute(getstdhandle(std_output_handle),
+                         //                       1); 
+                        break;
+                }*/
             }
         }
 
@@ -239,15 +423,22 @@ __host__ void displayGrid(int rows, int columns, int* Matrix)
 
     std::cout <<                          std::endl 
               <<                          std::endl 
-              << "Controls: "          << std::endl
+              << "Controls:               Points:             Lives:"
+              <<          "             Cells Occupied:"          
+              <<                          std::endl
               << "        ___"         << std::endl
-              << "       | W |"        << std::endl
+              << "       | W |            "        
+              <<                          *POINTS 
+              << "                   " << *LIVES
+              << "                   " << *CELLS_OCCUPIED
+              <<                          std::endl
               << " ___    ___    ___"  << std::endl
               << "| A |  | S |  | D |" << std::endl
               <<                          std::endl;
 }
 
-__host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix)
+__host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix,
+                      int* CELLS_OCCUPIED)
 {
     // Number of seeds to be planted in the board
     int seeds;
@@ -279,24 +470,26 @@ __host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix)
     }
 
     // Initialize random seed
-    std::srand(time(0));
+    std::srand(time(NULL));
+
+    std::cout << "CELLS_OCCUPIED: " << (*CELLS_OCCUPIED) << std::endl;
 
     while(seedsPlanted < seeds)
     {
         // Still empty cells
-        if(cellsOccupied < (rows * columns - 1))
+        if((*CELLS_OCCUPIED) <= (rows * columns))
         {
-        // Position within the matrix
-        position = rand() % ((rows * columns) - 1);
+            // Position within the matrix
+            position = rand() % (rows * columns);
 
-        if(matrix[position] == 0)
-        {
+            if(matrix[position] == 0)
+            {
                 // Random seed value among the ones according to the difficulty
                 matrix[position] = seedsValues[rand() % 
                                                (sizeof(seedsValues) 
-                                                / sizeof(int) 
-                                                - 1)];
+                                                / sizeof(int))];
                 seedsPlanted++;
+                (*CELLS_OCCUPIED)++;     
             }
         } 
         else
@@ -316,6 +509,11 @@ __host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix)
 // -----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+    // Variables needed within the game
+    int lives = 5;   int* LIVES  =         &lives;
+    int points = 0;  int* POINTS =         &points; 
+    int cellsOc = 0; int* CELLS_OCCUPIED = &cellsOc;
+
     // Game Mode
     char mode;
     // Game Difficulty
@@ -408,12 +606,14 @@ int main(int argc, char** argv)
         {
             std::cout <<"The number of rows is not valid, it should be bigger than 0"
                       << std::endl;
+            exit(0);
         }
 
         if(numColumns < 0)
         {
             std::cout << "The number of columns is not valid, it should be bigger than 0"
                       << std::endl;
+            exit(0);
         }
 
         numMaxThreads = getThreadsBlock();
@@ -430,15 +630,19 @@ int main(int argc, char** argv)
      
         bool play;
 
-        seeding(difficulty, numRows, numColumns, Matrix);
-        displayGrid(numRows, numColumns, Matrix);
+        seeding(difficulty, numRows, numColumns, Matrix, CELLS_OCCUPIED);
+        displayGrid(numRows, numColumns, Matrix, POINTS, LIVES, CELLS_OCCUPIED);
         
         do {
             std::cin >> input;
 
-            if(input.length() == 1) {
-                sendMatrixToGpu(input[0], numRows, numColumns, Matrix);
-                displayGrid(numRows, numColumns, Matrix);
+            if(input.length() == 1) 
+            {
+                cellsMerge(input[0], numRows, numColumns, Matrix, 
+                           POINTS, CELLS_OCCUPIED);
+                seeding(difficulty, numRows, numColumns, Matrix, CELLS_OCCUPIED);
+                displayGrid(numRows, numColumns, Matrix, POINTS, LIVES,
+                            CELLS_OCCUPIED);
             } else {
                 std::cout << "not that one cracker!" << std::endl;
             }
@@ -450,11 +654,14 @@ int main(int argc, char** argv)
 // -----------------------------------------------------------------------------
 // ----------------------------- CUDA METHODS-----------------------------------
 // -----------------------------------------------------------------------------
-cudaError_t sendMatrixToGpu(char movement, int row, int column, int* matrix)
+cudaError_t cellsMerge(char movement, int row, int column, int* matrix, 
+                       int* POINTS, int* CELLS_OCCUPIED)
 {
     // Variable to operate in the GPU
     int* dev_matrix = 0;
-    
+    int* dev_POINTS = 0;
+    int* dev_CELLSO = 0;
+
     // TODO: Set Kernel dimensions correctly, probably need a TILE_WIDTH
     // GPU threads distribution
     dim3 dimGrid(row, column, 1);
@@ -468,10 +675,24 @@ cudaError_t sendMatrixToGpu(char movement, int row, int column, int* matrix)
     cudaMalloc((void**) &dev_matrix, row * column * sizeof(int));
     check_CUDA_Error("cudaMalloc failed at Matrix!\n");
 
+    cudaMalloc((void**) &dev_POINTS, sizeof(int));
+    check_CUDA_Error("cudaMalloc failed at POINTS!\n");
+
+    cudaMalloc((void**) &dev_CELLSO, sizeof(int));
+    check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
+
     // Memory Transfer: CPU -> GPU
     cudaMemcpy(dev_matrix, matrix, row * column * sizeof(int),
                cudaMemcpyHostToDevice);
-    check_CUDA_Error("cudaMemCpy failed at Matrix!\n");
+    check_CUDA_Error("cudaMemCpy failed at Matrix (CPU -> GPU)!\n");
+    
+    cudaMemcpy(dev_POINTS, POINTS, sizeof(int),
+               cudaMemcpyHostToDevice);
+    check_CUDA_Error("cudaMemCpy failed at POINTS (CPU -> GPU)!\n");
+    
+    cudaMemcpy(dev_CELLSO, CELLS_OCCUPIED, sizeof(int),
+               cudaMemcpyHostToDevice);
+    check_CUDA_Error("cudaMemCpy failed at CELLS_OCCUPIED (CPU -> GPU)!\n");
     
     /*
      * If the movement is UP or DOWN:
@@ -479,33 +700,77 @@ cudaError_t sendMatrixToGpu(char movement, int row, int column, int* matrix)
      * If the movement is LEFT or RIGHT 
      *     The number of threads is the number fo rows.
      */
-    if(movement == 'w' || movement == 's')
+    switch(movement)
     {
-        fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
-    } 
-    else if(movement == 'a' || movement == 'd')
-    {
-        fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+        case 'w':
+            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+
+            computeMatrixUp<<<1, column>>>(row, column, dev_matrix, 
+                                           dev_POINTS, dev_CELLSO);
+            check_CUDA_Error("Error merging cells!\n");
+            
+            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+            break;
+
+        case 's':
+            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+
+            computeMatrixDown<<<1, column>>>(row, column, dev_matrix,
+                                             dev_POINTS, dev_CELLSO);
+            check_CUDA_Error("Error merging cells!\n");
+            
+            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+            break;
+        
+        case 'a':
+            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+
+            computeMatrixLeft<<<1, row>>>(row, column, dev_matrix, 
+                                          dev_POINTS, dev_CELLSO);
+            check_CUDA_Error("Error merging cells!\n");
+            
+            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+            break;
+        
+        case 'd':
+            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+
+            computeMatrixRight<<<1, row>>>(row, column, dev_matrix,
+                                           dev_POINTS, dev_CELLSO);
+            check_CUDA_Error("Error merging cells!\n");
+            
+            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            check_CUDA_Error("Error while gathering cells!\n");
+            break;
     }
-    check_CUDA_Error("Error while gathering cells\n");
+    
+    // Waits for kernel to finish
+    cudaDeviceSynchronize();
+    check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
 
     // Waits for kernel to finish
     cudaDeviceSynchronize();
-    check_CUDA_Error("cudaDeviceSynchronize returned error!");
-
-    // Computes the matrix joining the numbers with the same values
-    //computeMatrixUp<<<, >>>(rows, columns, dev_matrix);   
-    //check_CUDA_Error("Error after trying to mix cells!\n");
-
-    // Waits for kernel to finish
-    cudaDeviceSynchronize();
-    check_CUDA_Error("cudaDeviceSynchronize returned error!");
+    check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
 
     // Memory Transfer: GPU -> CPU
     cudaMemcpy(matrix, dev_matrix, row * column * sizeof(int),
                cudaMemcpyDeviceToHost);
-    check_CUDA_Error("cudaMemCpy failed after copying from GPU to CPU!\n");
+    check_CUDA_Error("cudaMemCpy failed at Matrix (GPU -> CPU)!\n");
 
+    cudaMemcpy(POINTS, dev_POINTS, sizeof(int),
+               cudaMemcpyDeviceToHost);
+    check_CUDA_Error("cudaMemCpy failed at POINTS (GPU -> CPU)!\n");
+
+    cudaMemcpy(CELLS_OCCUPIED, dev_CELLSO, sizeof(int),
+               cudaMemcpyDeviceToHost);
+    check_CUDA_Error("cudaMemCpy failed at CELLS_OCCUPIED (GPU -> CPU)!\n");
     return cudaGetLastError();
 }
 
