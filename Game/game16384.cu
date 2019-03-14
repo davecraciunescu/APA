@@ -22,7 +22,7 @@
 #include <algorithm>
 
 // Size of the tile to be used
-#define TILE_WIDTH 1
+#define TILE_WIDTH 2
 
 // -----------------------------------------------------------------------------
 // ------------------------------- HEADERS -------------------------------------
@@ -349,7 +349,7 @@ __host__ void check_CUDA_Error(const char *msg)
 }
 
 // Gets the number of threads allowed per block in the current GPU
-__host__ int getThreadsBlock()
+__host__ int getThreadsMaxBlock()
 {
     int threadsBlock = 0;
 
@@ -368,6 +368,21 @@ __host__ int getThreadsBlock()
     }
 
     return threadsBlock;
+}
+
+__host__ int getMinBoard(int difficulty)
+{
+    // In each difficulty level, the player should be allowed to perform at
+    // least three movements.
+    switch(difficulty)
+    {
+        case 1:
+            return 3 * 15;
+        case 2:
+            return 3 * 8;
+        default:
+            return 0;
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -583,8 +598,6 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
     // Initialize random seed
     std::srand(time(NULL));
 
-    std::cout << "CELLS_OCCUPIED: " << (*CELLS_OCCUPIED) << std::endl;
-
     while(canPlay && seedsPlanted < seeds)
     {
         // Still empty cells
@@ -708,7 +721,7 @@ void playGame (
             {
                 if (automatic)
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
                     if (iteration == 10)
                     {
@@ -870,8 +883,8 @@ int main(int argc, char** argv)
         // -------------------------------------------------------------------
         // ------------------------ ROWS & COLUMNS ---------------------------
         // -------------------------------------------------------------------
-        numRows    = std::stoi(argv[3]);
-        numColumns = std::stoi(argv[4]);
+        numColumns    = std::stoi(argv[3]);
+        numRows = std::stoi(argv[4]);
 
         if(numRows < 0)
         {
@@ -887,7 +900,9 @@ int main(int argc, char** argv)
             exit(0);
         }
 
-        numMaxThreads = getThreadsBlock();
+        numMaxThreads = getThreadsMaxBlock();
+
+        int recommendedCells = getMinBoard(difficulty); 
         
         if(numRows * numColumns > numMaxThreads)
         {
@@ -896,6 +911,14 @@ int main(int argc, char** argv)
                       << std::endl;
             exit(0);
         } 
+        else if(numRows * numColumns < recommendedCells)
+        {
+            std::cout << "The board is too small, please specify a bigger board"
+                      << "size. " << std::endl << "The minimum for the level " 
+                      << difficulty << " number of recommended minimum cells "
+                      << "is " << recommendedCells << "." << std::endl;
+            exit(0);
+        }
        
         // Initialization of the array which stores the length of the numbers in
         // each column
@@ -913,7 +936,8 @@ int main(int argc, char** argv)
 
 
         // EXECUTE GAME.
-        playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength, gameMode);
+        play(difficulty, numRows, numColumns, numMaxThreads, mode,
+             columnLength);
     }
 }
 
@@ -923,8 +947,8 @@ int main(int argc, char** argv)
 // -----------------------------------------------------------------------------
 cudaError_t cellsMerge(
     char movement,
-     int row, 
-     int column, 
+    int  numRows, 
+    int  numColumns, 
     int* matrix, 
     int* POINTS, 
     int* CELLS_OCCUPIED, 
@@ -936,17 +960,28 @@ cudaError_t cellsMerge(
     int* dev_CELLSO = 0;
     int* dev_colLen = 0;
 
-    // TODO: Set Kernel dimensions correctly, probably need a TILE_WIDTH
+    // Used to initialize the GRID and the BLOCK dimesions.
+    int dimensionLength;
+
+    if(movement == 'w' || movement == 's')
+    {
+        dimensionLength = numColumns;
+    }
+    else 
+    {
+        dimensionLength = numRows;
+    }
+
     // GPU threads distribution
-    dim3 dimGrid(row, column, 1);
-    dim3 dimBlock(1, 1);
+    dim3 dimGrid(dimensionLength / TILE_WIDTH, 1);
+    dim3 dimBlock(TILE_WIDTH, 1);
 
     // Selection of the GPU were code is to be executed
     cudaSetDevice(0);
     check_CUDA_Error("cudaSetDevice failed!\n");
     
     // Memory Allocation for GPU Variables
-    cudaMalloc((void**) &dev_matrix, row * column * sizeof(int));
+    cudaMalloc((void**) &dev_matrix, numRows * numColumns * sizeof(int));
     check_CUDA_Error("cudaMalloc failed at Matrix!\n");
 
     cudaMalloc((void**) &dev_POINTS, sizeof(int));
@@ -955,11 +990,11 @@ cudaError_t cellsMerge(
     cudaMalloc((void**) &dev_CELLSO, sizeof(int));
     check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
 
-    cudaMalloc((void**) &dev_colLen, column * sizeof(int));
+    cudaMalloc((void**) &dev_colLen, numColumns * sizeof(int));
     check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
     
     // Memory Transfer: CPU -> GPU
-    cudaMemcpy(dev_matrix, matrix, row * column * sizeof(int),
+    cudaMemcpy(dev_matrix, matrix, numRows * numColumns * sizeof(int),
                cudaMemcpyHostToDevice);
     check_CUDA_Error("cudaMemCpy failed at Matrix (CPU -> GPU)!\n");
     
@@ -971,7 +1006,7 @@ cudaError_t cellsMerge(
                cudaMemcpyHostToDevice);
     check_CUDA_Error("cudaMemCpy failed at CELLS_OCCUPIED (CPU -> GPU)!\n");
     
-    cudaMemcpy(dev_colLen, columnLength, column * sizeof(int),
+    cudaMemcpy(dev_colLen, columnLength, numColumns * sizeof(int),
                cudaMemcpyHostToDevice);
     check_CUDA_Error("cudaMemCpy failed at columnLength (CPU -> GPU)!\n");
     
@@ -984,54 +1019,62 @@ cudaError_t cellsMerge(
     switch(movement)
     {
         case 'w':
-            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows,
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
-            computeMatrixUp<<<1, column>>>(row, column, dev_matrix, 
-                                           dev_POINTS, dev_CELLSO,
-                                           dev_colLen);
+            computeMatrixUp<<<dimGrid, dimBlock>>>(numRows, numColumns, 
+                                                   dev_matrix, dev_POINTS, 
+                                                   dev_CELLSO, dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
-            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows,
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
             break;
 
         case 's':
-            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
-            computeMatrixDown<<<1, column>>>(row, column, dev_matrix,
-                                             dev_POINTS, dev_CELLSO,
-                                             dev_colLen);
+            computeMatrixDown<<<dimGrid, dimBlock>>>(numRows, numColumns, 
+                                                     dev_matrix, dev_POINTS, 
+                                                     dev_CELLSO, dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
-            fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
             break;
         
         case 'a':
-            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
-            computeMatrixLeft<<<1, row>>>(row, column, dev_matrix, 
-                                          dev_POINTS, dev_CELLSO,
-                                          dev_colLen);
+            computeMatrixLeft<<<dimGrid, dimBlock>>>(numRows, numColumns, dev_matrix, 
+                                              dev_POINTS, dev_CELLSO,
+                                              dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
-            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
             break;
         
         case 'd':
-            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
-            computeMatrixRight<<<1, row>>>(row, column, dev_matrix,
-                                           dev_POINTS, dev_CELLSO,
-                                           dev_colLen);
+            computeMatrixRight<<<dimGrid, dimBlock>>>(numRows,numColumns, dev_matrix,
+                                               dev_POINTS, dev_CELLSO,
+                                               dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
-            fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
+            fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
+                                             numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
             break;
     }
@@ -1045,7 +1088,7 @@ cudaError_t cellsMerge(
     check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
 
     // Memory Transfer: GPU -> CPU
-    cudaMemcpy(matrix, dev_matrix, row * column * sizeof(int),
+    cudaMemcpy(matrix, dev_matrix, numRows * numColumns * sizeof(int),
                cudaMemcpyDeviceToHost);
     check_CUDA_Error("cudaMemCpy failed at Matrix (GPU -> CPU)!\n");
 
@@ -1057,7 +1100,7 @@ cudaError_t cellsMerge(
                cudaMemcpyDeviceToHost);
     check_CUDA_Error("cudaMemCpy failed at CELLS_OCCUPIED (GPU -> CPU)!\n");
     
-    cudaMemcpy(columnLength, dev_colLen, column * sizeof(int),
+    cudaMemcpy(columnLength, dev_colLen, numColumns * sizeof(int),
                cudaMemcpyDeviceToHost);
     check_CUDA_Error("cudaMemCpy failed at columnLength -> CPU)!\n");
 
