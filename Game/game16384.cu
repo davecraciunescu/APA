@@ -48,6 +48,16 @@ void playGame(
     int* columnLength,      // Length of the column.
     bool automatic);        // Automatic gamemode.
 
+void saveGame(
+     int difficulty,        // Difficulty of the game.
+     int numRows,           // Number of rows in the game.
+     int numColumns,        // Number of columns in the game.
+     int numMaxThreads,     // Number of max threads to be run.
+    int* columnLength,      // Length of bigger number in column.
+    bool automatic);        // Play game in automatic mode.
+
+void loadGame();
+
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
 // -----------------------------------------------------------------------------
@@ -783,6 +793,19 @@ void playGame (
         }
     }
 }
+
+// Saves the current status of the game and all its settings.
+void saveGame(
+     int difficulty,        // Difficulty of the game.
+     int numRows,           // Number of rows in the game.
+     int numColumns,        // Number of columns in the game.
+     int numMaxThreads,     // Number of max threads to be run.
+    int* columnLength,      // Length of bigger number in column.
+    bool automatic);        // Play game in automatic mode.
+
+// Retrieves a game from a saved status and reloads it into memory.
+void loadGame();
+
 
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
