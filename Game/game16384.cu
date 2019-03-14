@@ -883,8 +883,8 @@ int main(int argc, char** argv)
         // -------------------------------------------------------------------
         // ------------------------ ROWS & COLUMNS ---------------------------
         // -------------------------------------------------------------------
-        numColumns    = std::stoi(argv[3]);
-        numRows = std::stoi(argv[4]);
+        numColumns = std::stoi(argv[3]);
+        numRows    = std::stoi(argv[4]);
 
         if(numRows < 0)
         {
@@ -936,8 +936,8 @@ int main(int argc, char** argv)
 
 
         // EXECUTE GAME.
-        play(difficulty, numRows, numColumns, numMaxThreads, mode,
-             columnLength);
+        playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
+                 gameMode);
     }
 }
 
