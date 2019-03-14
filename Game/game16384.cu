@@ -18,6 +18,8 @@
 // Slepp
 #include <chrono>
 #include <thread>
+// Fill in 
+#include <algorithm>
 
 // Size of the tile to be used
 #define TILE_WIDTH 1
@@ -26,7 +28,7 @@
 // ------------------------------- HEADERS -------------------------------------
 // -----------------------------------------------------------------------------
 cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
-                       int* POINTS, int* CELLS_OCCUPIED);
+                       int* POINTS, int* CELLS_OCCUPIED, int* columnLength);
 
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
@@ -56,20 +58,22 @@ __global__ void computeMatrixUp(int numRows, int numColumns, int* matrix,
       
                 (*POINTS) += matrix[i * numRows + col];
                 (*CELLS_OCCUPIED)--;
-            
+                /*
                 if(columnLength[col] 
                    < 
                    std::to_string(matrix[i * numRows + col]).length())
                 {
                     columnLength[col] = matrix[i * numRows + col];
                 }
+                */
             }
         }
     }
 }
 
 __global__ void computeMatrixDown(int numRows, int numColumns, int* matrix,
-                                  int* POINTS, int* CELLS_OCCUPIED)
+                                  int* POINTS, int* CELLS_OCCUPIED,
+                                  int* columnLength)
 {
     // Matrix dimensions
     int bx = blockIdx.x;  
@@ -92,20 +96,22 @@ __global__ void computeMatrixDown(int numRows, int numColumns, int* matrix,
                 
                 (*POINTS) += matrix[i * numRows + col];
                 (*CELLS_OCCUPIED)--;
-                
+                /* 
                 if(columnLength[col] 
                    < 
                    std::to_string(matrix[i * numRows + col]).length())
                 {
                     columnLength[col] = matrix[i * numRows + col];
                 }
+                */
             }
         }
     }
 }
 
 __global__ void computeMatrixLeft(int numRows, int numColumns, int* matrix,
-                                  int* POINTS, int* CELLS_OCCUPIED)
+                                  int* POINTS, int* CELLS_OCCUPIED, 
+                                  int* columnLength)
 {
     // Matrix dimensions
     int bx = blockIdx.x;
@@ -128,20 +134,22 @@ __global__ void computeMatrixLeft(int numRows, int numColumns, int* matrix,
                 
                 (*POINTS) += matrix[row * numRows + i];
                 (*CELLS_OCCUPIED)--;
-                
+                /*
                 if(columnLength[i] 
                    < 
                    std::to_string(matrix[row * numRows + i]).length())
                 {
                     columnLength[i] = matrix[row * numRows + i];
                 }
+                */
             }
         }
     }
 }
 
 __global__ void computeMatrixRight(int numRows, int numColumns, int* matrix,
-                                   int* POINTS, int* CELLS_OCCUPIED)
+                                   int* POINTS, int* CELLS_OCCUPIED,
+                                   int* columnLength)
 {
     // Matrix dimensions
     int bx = blockIdx.x;  
@@ -164,14 +172,14 @@ __global__ void computeMatrixRight(int numRows, int numColumns, int* matrix,
 
                 (*POINTS) += matrix[row * numRows + i];
                 (*CELLS_OCCUPIED)--;
-
+                /*
                 if(columnLength[i] 
                    < 
                    std::to_string(matrix[row * numRows + i]).length())
                 {
                     columnLength[i] = matrix[row * numRows + i];
                 }
-
+                */
             }
         }
     }
@@ -336,7 +344,8 @@ __host__ std::string printHearts(int* LIVES)
 }
 
 __host__ void displayGrid(int rows, int columns, int* Matrix, 
-                          int* POINTS, int* LIVES, int* CELLS_OCCUPIED)
+                          int* POINTS, int* LIVES, int* CELLS_OCCUPIED,
+                          int* columnLength)
 {
     system("clear");
     
@@ -640,7 +649,8 @@ void playGameManual (
             exit(1);
         }
         
-        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED);
+        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED,
+                    columnLength);
 
         std::cout << "Starting Game." << std::endl;
 
@@ -665,7 +675,7 @@ void playGameManual (
                         
                         default:
                             cellsMerge(input[0], numRows, numColumns, matrix, POINTS, 
-                                CELLS_OCCUPIED);
+                                CELLS_OCCUPIED, columnLength);
 
                             // Check if board is full.
                             if (seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED))
@@ -675,7 +685,7 @@ void playGameManual (
                                 seeding(difficulty, numRows, numColumns, matrix,
                                     CELLS_OCCUPIED);
                                 displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
-                                    CELLS_OCCUPIED);
+                                    CELLS_OCCUPIED, columnLength);
                             }
                             else
                             {
@@ -742,7 +752,8 @@ void playGameAutomatic (
     {   
         // SEED GAME INITIAL STATE.
         seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
-        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED);
+        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED,
+                    columnLength);
 
         std::cout << "Starting Game." << std::endl;
 
@@ -780,7 +791,7 @@ void playGameAutomatic (
                             
                             default:
                                 cellsMerge(input[0], numRows, numColumns,
-                                    matrix, POINTS, CELLS_OCCUPIED);
+                                    matrix, POINTS, CELLS_OCCUPIED, columnLength);
                             
                                 if (seeding(difficulty, numRows, numColumns, matrix, 
                                     CELLS_OCCUPIED))
@@ -790,7 +801,7 @@ void playGameAutomatic (
                                     seeding(difficulty, numRows, numColumns, matrix,
                                         CELLS_OCCUPIED);
                                     displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
-                                        CELLS_OCCUPIED);
+                                        CELLS_OCCUPIED, columnLength);
                                 }
                                 else
                                 {
@@ -811,7 +822,7 @@ void playGameAutomatic (
                     iteration++;
                     int movement = rand() % (sizeof(movements) / sizeof(char));
                     cellsMerge(movements[movement], numRows, numColumns, matrix, 
-                        POINTS, CELLS_OCCUPIED);
+                        POINTS, CELLS_OCCUPIED, columnLength);
 
                     if (seeding(difficulty, numRows, numColumns, matrix,
                             CELLS_OCCUPIED))
@@ -823,7 +834,7 @@ void playGameAutomatic (
                         seeding(difficulty, numRows, numColumns, matrix,
                                 CELLS_OCCUPIED);
                         displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
-                                    CELLS_OCCUPIED);
+                                    CELLS_OCCUPIED, columnLength);
                     }
                     else
                     {
@@ -859,11 +870,13 @@ void playGame (
     switch(mode)
     {
         case 'm':
-            playGameManual(difficulty, numRows, numColumns, numMaxThreads);
+            playGameManual(difficulty, numRows, numColumns, numMaxThreads,
+                           columnLength);
             break;
 
         case 'a':
-            playGameAutomatic(difficulty, numRows, numColumns, numMaxThreads);
+            playGameAutomatic(difficulty, numRows, numColumns, numMaxThreads,
+                              columnLength);
             break;
     }
 }
@@ -883,7 +896,6 @@ int main(int argc, char** argv)
 
     // Used as auxiliary variable for any input in the system
     std::string input;
-    
 
     system("clear");
     std::cout << "Processing game settings" << std::endl;
@@ -984,6 +996,11 @@ int main(int argc, char** argv)
             exit(0);
         } 
        
+        // Initialization of the array which stores the length of the numbers in
+        // each column
+        columnLength = (int*) malloc(numColumns);
+        std::fill_n(columnLength, numColumns, 1);
+        
         // EXECUTE GAME.
         playGame(difficulty, numRows, numColumns, numMaxThreads, mode,
                  columnLength);
@@ -1001,6 +1018,7 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
     int* dev_matrix = 0;
     int* dev_POINTS = 0;
     int* dev_CELLSO = 0;
+    int* dev_colLen = 0;
 
     // TODO: Set Kernel dimensions correctly, probably need a TILE_WIDTH
     // GPU threads distribution
@@ -1021,6 +1039,9 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
     cudaMalloc((void**) &dev_CELLSO, sizeof(int));
     check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
 
+    cudaMalloc((void**) &dev_colLen, column * sizeof(int));
+    check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
+    
     // Memory Transfer: CPU -> GPU
     cudaMemcpy(dev_matrix, matrix, row * column * sizeof(int),
                cudaMemcpyHostToDevice);
@@ -1033,6 +1054,10 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
     cudaMemcpy(dev_CELLSO, CELLS_OCCUPIED, sizeof(int),
                cudaMemcpyHostToDevice);
     check_CUDA_Error("cudaMemCpy failed at CELLS_OCCUPIED (CPU -> GPU)!\n");
+    
+    cudaMemcpy(dev_colLen, columnLength, column * sizeof(int),
+               cudaMemcpyHostToDevice);
+    check_CUDA_Error("cudaMemCpy failed at columnLength (CPU -> GPU)!\n");
     
     /*
      * If the movement is UP or DOWN:
@@ -1048,7 +1073,7 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
 
             computeMatrixUp<<<1, column>>>(row, column, dev_matrix, 
                                            dev_POINTS, dev_CELLSO,
-                                           columnLength);
+                                           dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
             fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
@@ -1061,7 +1086,7 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
 
             computeMatrixDown<<<1, column>>>(row, column, dev_matrix,
                                              dev_POINTS, dev_CELLSO,
-                                             columnLength);
+                                             dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
             fillSpace<<<1, column>>>(dev_matrix, movement, row, column);
@@ -1074,7 +1099,7 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
 
             computeMatrixLeft<<<1, row>>>(row, column, dev_matrix, 
                                           dev_POINTS, dev_CELLSO,
-                                          columnLength);
+                                          dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
             fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
@@ -1087,7 +1112,7 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
 
             computeMatrixRight<<<1, row>>>(row, column, dev_matrix,
                                            dev_POINTS, dev_CELLSO,
-                                           columnLength);
+                                           dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
             fillSpace<<<1, row>>>(dev_matrix, movement, row, column);
@@ -1115,6 +1140,12 @@ cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
     cudaMemcpy(CELLS_OCCUPIED, dev_CELLSO, sizeof(int),
                cudaMemcpyDeviceToHost);
     check_CUDA_Error("cudaMemCpy failed at CELLS_OCCUPIED (GPU -> CPU)!\n");
+    
+    cudaMemcpy(columnLength, dev_colLen, column * sizeof(int),
+               cudaMemcpyDeviceToHost);
+    check_CUDA_Error("cudaMemCpy failed at columnLength -> CPU)!\n");
+
     return cudaGetLastError();
+
 }
 
