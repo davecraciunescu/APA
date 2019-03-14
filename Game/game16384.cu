@@ -430,13 +430,13 @@ __host__ std::string printHearts(int LIVES)
 }
 
 // Prints the game's grid, including buttons, lives and punctuation.
-__host__ void displayGrid(int rows, 
-                          int columns, 
-                          int* Matrix, 
-                          int* POINTS, 
-                          int* LIVES, 
-                          int* CELLS_OCCUPIED,
-                          int* columnLength)
+__host__ void displayGrid(int rows,             // Rows of the table.
+                          int columns,          // Columns of the table.
+                          int* Matrix,          // Matrix with values.
+                          int* POINTS,          // Earned points.
+                          int* LIVES,           // Remaining lives
+                          int* CELLS_OCCUPIED,  // Occupied cells.
+                          int* columnLength)    // Length of the columns.
 {
     system("clear");
    
@@ -1105,11 +1105,19 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixUp<<<dimGrid, dimBlock>>>(numRows, numColumns, 
                                                    dev_matrix, dev_POINTS, 
                                                    dev_CELLSO, dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows,
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
@@ -1120,11 +1128,19 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixDown<<<dimGrid, dimBlock>>>(numRows, numColumns, 
                                                      dev_matrix, dev_POINTS, 
                                                      dev_CELLSO, dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
@@ -1135,11 +1151,19 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixLeft<<<dimGrid, dimBlock>>>(numRows, numColumns, dev_matrix, 
                                               dev_POINTS, dev_CELLSO,
                                               dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
@@ -1150,9 +1174,17 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixRight<<<dimGrid, dimBlock>>>(numRows,numColumns, dev_matrix,
                                                dev_POINTS, dev_CELLSO,
                                                dev_colLen);
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             check_CUDA_Error("Error merging cells!\n");
             
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
@@ -1164,6 +1196,7 @@ cudaError_t cellsMerge(
     // Waits for kernel to finish
     cudaDeviceSynchronize();
     check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
 
     // Memory Transfer: GPU -> CPU
     cudaMemcpy(matrix, dev_matrix, numRows * numColumns * sizeof(int),
