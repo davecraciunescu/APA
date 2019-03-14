@@ -77,8 +77,6 @@ __global__ void computeMatrixUp(int  numRows,
 
     if(col < numColumns)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = 0; i < numRows - 1; i++)
         {
             if(matrix[i * numRows + col] > 0 && 
@@ -120,8 +118,6 @@ __global__ void computeMatrixDown(int  numRows,
 
     if(col < numColumns)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = numRows - 1; i > 0; i--)
         {
             if(matrix[i * numRows + col] > 0 && 
@@ -163,8 +159,6 @@ __global__ void computeMatrixLeft(int  numRows,
 
     if(row < numRows)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = 0; i < numColumns - 1; i++)
         {
             if(matrix[row * numRows + i] > 0 && 
@@ -206,8 +200,6 @@ __global__ void computeMatrixRight(int  numRows,
 
     if(row < numRows)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = numColumns - 1; i > 0; i--)
         {
             if(matrix[row * numRows + i] > 0 && 
@@ -829,7 +821,7 @@ void saveGame(
     bool automatic)         // Play game in automatic mode.
 {
    std::string record;
-   std::ofstream file;
+//   std::ofstream file;
 }
 
 
@@ -1025,7 +1017,7 @@ cudaError_t cellsMerge(
     check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
 
     cudaMalloc((void**) &dev_colLen, numColumns * sizeof(int));
-    check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
+    check_CUDA_Error("cudaMalloc failed at ColumnLength!\n");
     
     // Memory Transfer: CPU -> GPU
     cudaMemcpy(dev_matrix, matrix, numRows * numColumns * sizeof(int),
