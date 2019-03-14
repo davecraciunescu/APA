@@ -29,8 +29,8 @@
 // -----------------------------------------------------------------------------
 cudaError_t cellsMerge(
     char movement,          // Direction of the movement. 
-    int row,                // Rows of the table.
-    int column,             // Columns of the table.
+     int row,               // Rows of the table.
+     int column,            // Columns of the table.
     int* matrix,            // Matrix with values.
     int* POINTS,            // Number of points.
     int* CELLS_OCCUPIED,    // Occupied cells.
@@ -47,6 +47,16 @@ void playGame(
      int numMaxThreads,     // Max number of threds.
     int* columnLength,      // Length of the column.
     bool automatic);        // Automatic gamemode.
+
+void saveGame(
+     int difficulty,        // Difficulty of the game.
+     int numRows,           // Number of rows in the game.
+     int numColumns,        // Number of columns in the game.
+     int numMaxThreads,     // Number of max threads to be run.
+    int* columnLength,      // Length of bigger number in column.
+    bool automatic);        // Play game in automatic mode.
+
+void loadGame();
 
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
@@ -720,12 +730,18 @@ void playGame (
 
             while (playing)
             {
+                // Gameplay changes if gamemode is automatic.
                 if (automatic)
                 {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-                    if (iteration == 10)
+                    if (iteration != 10)
                     {
+                        iteration++;
+                        input = randomMovement(); // Autogenerate a move.
+                    }
+                    else
+                    { 
                         iteration = 1;
 
                         std::cout << "Do you with to SAVE (G) your game?"
@@ -735,17 +751,18 @@ void playGame (
                                   << "If you want to keep playing in the "
                                   << "automatic mode PRESS ANY KEY."
                                   << std::endl;
-                    }
-                    else
-                    {
-                        iteration++;
-                        input = randomMovement();
+                        
+                        // Get user input.
+                        std::cin >> input;
                     }
                 }
                 else
                 {
                     std::cin >> input;
                 }
+
+                // Treat input as if the same behaviour. Automode has been
+                // considered
 
                 if (input.length() == 1)
                 {
@@ -801,6 +818,24 @@ void playGame (
         }
     }
 }
+
+// Saves the current status of the game and all its settings.
+void saveGame(
+     int difficulty,        // Difficulty of the game.
+     int numRows,           // Number of rows in the game.
+     int numColumns,        // Number of columns in the game.
+     int numMaxThreads,     // Number of max threads to be run.
+    int* columnLength,      // Length of bigger number in column.
+    bool automatic)         // Play game in automatic mode.
+{
+   std::string record;
+   std::ofstream file;
+}
+
+
+// Retrieves a game from a saved status and reloads it into memory.
+void loadGame();
+
 
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
