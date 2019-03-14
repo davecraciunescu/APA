@@ -15,6 +15,9 @@
 #include <cstdlib>
 // Time
 #include <time.h>
+// Slepp
+#include <chrono>
+#include <thread>
 
 // Size of the tile to be used
 #define TILE_WIDTH 1
@@ -238,7 +241,7 @@ __global__ void fillSpace(int* matrix, char movement, int rows, int columns)
 }
 
 // -----------------------------------------------------------------------------
-// -------------------------- CUDA RELATED METHODS -----------------------------
+// ------------------------- FUNCTIONALITY METHODS  ----------------------------
 // -----------------------------------------------------------------------------
 // Method which allows to check for errors
 __host__ void check_CUDA_Error(const char *msg)
@@ -550,14 +553,14 @@ bool playAgain(int lives)
     return willPlayAgain;
 }
 
-// MAIN METHOD OF THE GAME.
-void playGame (
+void playGameManual (
     int  difficulty,    // Difficulty of the game.
     int  numRows,       // Number of rows in the game.
     int  numColumns,    // Number of columns in the game.
     int  numMaxThreads  // Number of max threads to be run.
     )
 {
+
     // Auxiliary input variable.
     std::string input;
 
@@ -595,9 +598,9 @@ void playGame (
                         break;
                         
                         case 'q':
-                            playing         = false;
+                            playing        = false;
                             keepPlaying    = false;
-                            winner          = false;
+                            winner         = false;
                         break;
                         
                         default:
@@ -639,6 +642,167 @@ void playGame (
     winner = true;
 }
 
+void playGameAutomatic (
+    int  difficulty,    // Difficulty of the game.
+    int  numRows,       // Number of rows in the game.
+    int  numColumns,    // Number of columns in the game.
+    int  numMaxThreads  // Number of max threads to be run.
+    )
+{
+
+    // Auxiliary input variable.
+    std::string input;
+
+    // Variables needed within the game.
+    int   lives = 5;    int* LIVES          = &lives;
+    int  points = 0;    int* POINTS         = &points;
+    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc; 
+
+    int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
+    bool      playing = true;
+    bool  keepPlaying = true;
+    bool       winner = true;
+
+    char movements [4] = {'w', 'a', 's', 'd'};
+
+    // Initialize random seed
+    std::srand(time(NULL));
+
+    /* Used to know when to ask the user for an action:
+     * - Continue.
+     * - Quit.
+     * - Save.
+     */
+    int iteration = 0;
+
+    // MAIN GAME LOOP.
+    while (keepPlaying)
+    {   
+        // SEED GAME INITIAL STATE.
+        seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
+        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED);
+
+        std::cout << "Starting Game." << std::endl;
+
+        if (lives > 0)
+        {
+            while (playing)
+            {   
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+
+                if(iteration % 10 == 0)
+                {
+                    std::cout << "Do you wish to SAVE (G) your game? "
+                              << std::endl
+                              << "Or maybe to QUIT (Q) the game?"
+                              << std::endl
+                              << "If you want to keep playing in the "
+                              << "automatical mode PRESS ANY KEY."
+                              << std::endl;
+
+                    std::cin >> input;
+                    iteration = 1;
+                    
+                    if (input.length() == 1)
+                    {
+                        switch (input[0])
+                        {
+                            case 'g':
+                                // TODO SAVE GAME.
+                            break;
+                            
+                            case 'q':
+                                playing        = false;
+                                keepPlaying    = false;
+                                winner         = false;
+                            break;
+                            
+                            default:
+                                if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                                {
+                                    cellsMerge(input[0], numRows, numColumns, matrix,
+                                        POINTS, CELLS_OCCUPIED);
+                                    seeding(difficulty, numRows, numColumns, matrix,
+                                        CELLS_OCCUPIED);
+                                    displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
+                                        CELLS_OCCUPIED);
+                                }
+                                else
+                                {
+                                    // Take away one life.
+                                    lives--;
+                                    playing = false;
+                                }
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        std:: cout << "Not that one, cracker!" << std::endl;
+                    }
+                } 
+                else 
+                {
+                    iteration++;
+
+                    if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                    {
+                        int movement = rand() %
+                                       (sizeof(movements) / sizeof(char));
+                        cellsMerge(movements[movement], numRows, numColumns, matrix,
+                                   POINTS, CELLS_OCCUPIED);
+                        seeding(difficulty, numRows, numColumns, matrix,
+                                CELLS_OCCUPIED);
+                        displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
+                                    CELLS_OCCUPIED);
+                    }
+                    else
+                    {
+                        // Take away one life.
+                        lives--;
+                        playing = false;
+                    }
+                }
+
+            }
+
+            // ASK USER IF WANTS TO PLAY AGAIN.
+            keepPlaying = playAgain(lives);
+        }
+        else
+        {
+            std::cout << "You have 0 lives. GAMEOVER." << std::endl;
+            keepPlaying = false;
+        }
+    }
+
+    // Reset the value of winner.
+    winner = true;
+    
+}
+
+// MAIN METHOD OF THE GAME.
+void playGame (
+    int  difficulty,    // Difficulty of the game.
+    int  numRows,       // Number of rows in the game.
+    int  numColumns,    // Number of columns in the game.
+    int  numMaxThreads, // Number of max threads to be run.
+    char mode           // Gaming mode (manual or automatic).
+    )
+{
+    switch(mode)
+    {
+        case 'm':
+            playGameManual(difficulty, numRows, numColumns, numMaxThreads);
+            break;
+
+        case 'a':
+            playGameAutomatic(difficulty, numRows, numColumns, numMaxThreads);
+            break;
+    }
+}
+
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
 // -----------------------------------------------------------------------------
@@ -665,7 +829,7 @@ int main(int argc, char** argv)
         // --------------------------------------------------------------------
         // --------------------------- PLAYING MODE ---------------------------
         // --------------------------------------------------------------------
-        if(input.compare("m")) 
+        if(input.compare("m") == 0) 
         {
             std::cout << "Setting to MANUAL" << std::endl;   
             std::cout << "-------------------------------" 
@@ -673,7 +837,7 @@ int main(int argc, char** argv)
                       << "-------------------------------"
                       << std::endl;
             mode = 'm';
-        } else if (input.compare("a"))
+        } else if (input.compare("a") == 0)
         {
             std::cout << "Setting to AUTOMATIC" << std::endl;
             std::cout << "-----------------------------" 
@@ -696,7 +860,7 @@ int main(int argc, char** argv)
         // --------------------------------------------------------------------
         // ------------------------ PLAYING DIFFICULTY ------------------------
         // --------------------------------------------------------------------
-        if(input.compare("1")) 
+        if(input.compare("1") == 0) 
         {
             std::cout << "Setting to EASY" << std::endl;   
             std::cout << "--------------------------------" 
@@ -704,7 +868,7 @@ int main(int argc, char** argv)
                       << "--------------------------------"
                       << std::endl;
             difficulty = 1;
-        } else if (input.compare("2"))
+        } else if (input.compare("2") == 0)
         {
 
             std::cout << "Setting to HARD" << std::endl;   
@@ -755,7 +919,7 @@ int main(int argc, char** argv)
         } 
        
         // EXECUTE GAME.
-        playGame(difficulty, numRows, numColumns, numMaxThreads);
+        playGame(difficulty, numRows, numColumns, numMaxThreads, mode);
     }
 }
 
