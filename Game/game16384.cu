@@ -27,14 +27,46 @@
 // -----------------------------------------------------------------------------
 // ------------------------------- HEADERS -------------------------------------
 // -----------------------------------------------------------------------------
-cudaError_t cellsMerge(char movement, int row, int column, int* matrix,
-                       int* POINTS, int* CELLS_OCCUPIED, int* columnLength);
+cudaError_t cellsMerge(
+    char movement,          // Direction of the movement. 
+    int row,                // Rows of the table.
+    int column,             // Columns of the table.
+    int* matrix,            // Matrix with values.
+    int* POINTS,            // Number of points.
+    int* CELLS_OCCUPIED,    // Occupied cells.
+    int* columnLength);     // Length of the columns.
+
+bool playAgain(int lives);
+
+char randomMovement();
+
+void playGame(
+     int difficulty,        // Difficulty of the game.
+     int numRows,           // Number of rows.
+     int numColumns,        // Number of columns.
+     int numMaxThreads,     // Max number of threds.
+    int* columnLength,      // Length of the column.
+    bool automatic);        // Automatic gamemode.
+
+void play(
+     int difficulty,        // Difficulty of the game.
+     int numRows,           // Number of rows.
+     int numColumns,        // Number of columns.
+     int numMaxThreads,     // Max number of threads.
+    char mode,              // Gaming mode (manual or automatic).
+    int* columnLength);     // Length of the bigger number in column.
+
+
+
 
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
 // -----------------------------------------------------------------------------
-__global__ void computeMatrixUp(int numRows, int numColumns, int* matrix,
-                                int* POINTS, int* CELLS_OCCUPIED, 
+__global__ void computeMatrixUp(int  numRows, 
+                                int  numColumns, 
+                                int* matrix,
+                                int* POINTS, 
+                                int* CELLS_OCCUPIED, 
                                 int* columnLength)
 {
     // Matrix dimensions
@@ -71,8 +103,11 @@ __global__ void computeMatrixUp(int numRows, int numColumns, int* matrix,
     }
 }
 
-__global__ void computeMatrixDown(int numRows, int numColumns, int* matrix,
-                                  int* POINTS, int* CELLS_OCCUPIED,
+__global__ void computeMatrixDown(int  numRows,
+                                  int  numColumns, 
+                                  int* matrix,
+                                  int* POINTS, 
+                                  int* CELLS_OCCUPIED,
                                   int* columnLength)
 {
     // Matrix dimensions
@@ -109,8 +144,11 @@ __global__ void computeMatrixDown(int numRows, int numColumns, int* matrix,
     }
 }
 
-__global__ void computeMatrixLeft(int numRows, int numColumns, int* matrix,
-                                  int* POINTS, int* CELLS_OCCUPIED, 
+__global__ void computeMatrixLeft(int  numRows, 
+                                  int  numColumns, 
+                                  int* matrix,
+                                  int* POINTS, 
+                                  int* CELLS_OCCUPIED, 
                                   int* columnLength)
 {
     // Matrix dimensions
@@ -147,8 +185,11 @@ __global__ void computeMatrixLeft(int numRows, int numColumns, int* matrix,
     }
 }
 
-__global__ void computeMatrixRight(int numRows, int numColumns, int* matrix,
-                                   int* POINTS, int* CELLS_OCCUPIED,
+__global__ void computeMatrixRight(int  numRows, 
+                                   int  numColumns, 
+                                   int* matrix,
+                                   int* POINTS, 
+                                   int* CELLS_OCCUPIED,
                                    int* columnLength)
 {
     // Matrix dimensions
@@ -618,79 +659,106 @@ bool playAgain(int lives)
     return willPlayAgain;
 }
 
-void playGameManual (
-    int  difficulty,    // Difficulty of the game.
-    int  numRows,       // Number of rows in the game.
-    int  numColumns,    // Number of columns in the game.
-    int  numMaxThreads, // Number of max threads to be run.
-    int* columnLength   // The length of the bigger number in the column
-    )
+// Returns a random movement.
+char randomMovement()
 {
+    char movements [4] = {'w','a','s','d'};
 
+    // Initialize random seeding.
+    std::srand(time(NULL));
+
+    return movements[rand() % (sizeof(movements) / sizeof(char))]; 
+}
+
+void playGame (
+    int  difficulty,    // Difficulty of the game.
+    int  numRows,       // Number of rows in game.
+    int  numColumns,    // Number of columns in game.
+    int  numMaxThreads, // Number of max threads to be run.
+    int* columnLength,  // Length of bigger number in column.
+    bool automatic)     // Play game in automatic mode.
+{
     // Auxiliary input variable.
     std::string input;
 
     // Variables needed within the game.
     int   lives = 5;    int* LIVES          = &lives;
     int  points = 0;    int* POINTS         = &points;
-    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc; 
+    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc;
 
-    int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
-    bool      playing = true;
-    bool  keepPlaying = true;
+    int*      matrix = (int*) calloc(numRows * numColumns, sizeof(int));
+    bool     playing = true;
+    bool keepPlaying = true;
+     int   iteration = 0;
 
-    // MAIN GAME LOOP.
+    // Main Game Loop.
     while (keepPlaying)
-    {   
-        // SEED GAME INITIAL STATE.
-        if (!seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED))
-        {
-            std::cout << "ERROR. Table was not reset before seeding." << std::endl;
-            exit(1);
-        }
-        
-        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED,
-                    columnLength);
-
+    {
         std::cout << "Starting Game." << std::endl;
 
         if (lives > 0)
         {
+            // Seed game to initial State.
+            seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
+            displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
+                CELLS_OCCUPIED, columnLength);
+
             while (playing)
             {
-                std::cin >> input;
+                if (automatic)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+
+                    if (iteration == 10)
+                    {
+                        iteration = 1;
+
+                        std::cout << "Do you with to SAVE (G) your game?"
+                                  << std::endl
+                                  << "Or maybe to QUIT (Q) the game?"
+                                  << std::endl
+                                  << "If you want to keep playing in the "
+                                  << "automatic mode PRESS ANY KEY."
+                                  << std::endl;
+                    }
+                    else
+                    {
+                        iteration++;
+                        input = randomMovement();
+                    }
+                }
+                else
+                {
+                    std::cin >> input;
+                }
 
                 if (input.length() == 1)
                 {
-                    switch (input[0])
+                    switch(input[0])
                     {
                         case 'g':
                             // TODO SAVE GAME.
                         break;
-                        
+
                         case 'q':
-                            playing        = false;
-                            keepPlaying    = false;
+                            playing     = false;
+                            keepPlaying = false;
                         break;
-                        
+
                         default:
-                            cellsMerge(input[0], numRows, numColumns, matrix, POINTS, 
-                                CELLS_OCCUPIED, columnLength);
+                            cellsMerge(input[0], numRows, numColumns, matrix,
+                                POINTS, CELLS_OCCUPIED, columnLength);
 
                             // Check if board is full.
-                            if (seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED))
-                            {                   
-                                cellsMerge(input[0], numRows, numColumns, matrix,
-                                    POINTS, CELLS_OCCUPIED, columnLength);
-                                seeding(difficulty, numRows, numColumns, matrix,
-                                    CELLS_OCCUPIED);
-                                displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
-                                    CELLS_OCCUPIED, columnLength);
+                            if (seeding(difficulty, numRows, numColumns, matrix,
+                                CELLS_OCCUPIED))
+                            {
+                                displayGrid(numRows, numColumns, matrix, POINTS,
+                                    LIVES, CELLS_OCCUPIED, columnLength);
                             }
                             else
                             {
-                                // Take away one life.
-                                lives--;
+                                lives--; // Take away one life.
                                 playing = false;
                             }
                         break;
@@ -698,11 +766,11 @@ void playGameManual (
                 }
                 else
                 {
-                    std:: cout << "Not that one, cracker!" << std::endl;
+                    std::cout << "Not that one, cracker!" << std::endl;
                 }
             }
 
-            // ASK USER IF WANTS TO PLAY AGAIN.
+            // Ask if user wants to play again.
             keepPlaying = playAgain(lives);
         }
         else
@@ -713,172 +781,27 @@ void playGameManual (
     }
 }
 
-void playGameAutomatic (
-    int  difficulty,    // Difficulty of the game.
-    int  numRows,       // Number of rows in the game.
-    int  numColumns,    // Number of columns in the game.
-    int  numMaxThreads, // Number of max threads to be run.
-    int* columnLength   // The length of the bigger number in the column
-    )
-{
-
-    // Auxiliary input variable.
-    std::string input;
-
-    // Variables needed within the game.
-    int   lives = 5;    int* LIVES          = &lives;
-    int  points = 0;    int* POINTS         = &points;
-    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc; 
-
-    int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
-    bool      playing = true;
-    bool  keepPlaying = true;
-    bool       winner = true;
-
-    char movements [4] = {'w', 'a', 's', 'd'};
-
-    // Initialize random seed
-    std::srand(time(NULL));
-
-    /* Used to know when to ask the user for an action:
-     * - Continue.
-     * - Quit.
-     * - Save.
-     */
-    int iteration = 0;
-
-    // MAIN GAME LOOP.
-    while (keepPlaying)
-    {   
-        // SEED GAME INITIAL STATE.
-        seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
-        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED,
-                    columnLength);
-
-        std::cout << "Starting Game." << std::endl;
-
-        if (lives > 0)
-        {
-            while (playing)
-            {   
-                std::this_thread::sleep_for(std::chrono::milliseconds(1200));
-
-                if(iteration % 10 == 0)
-                {
-                    std::cout << "Do you wish to SAVE (G) your game? "
-                              << std::endl
-                              << "Or maybe to QUIT (Q) the game?"
-                              << std::endl
-                              << "If you want to keep playing in the "
-                              << "automatical mode PRESS ANY KEY."
-                              << std::endl;
-
-                    std::cin >> input;
-                    iteration = 1;
-                    
-                    if (input.length() == 1)
-                    {
-                        switch (input[0])
-                        {
-                            case 'g':
-                                // TODO SAVE GAME.
-                            break;
-                            
-                            case 'q':
-                                playing        = false;
-                                keepPlaying    = false;
-                            break;
-                            
-                            default:
-                                cellsMerge(input[0], numRows, numColumns,
-                                    matrix, POINTS, CELLS_OCCUPIED, columnLength);
-                            
-                                if (seeding(difficulty, numRows, numColumns, matrix, 
-                                    CELLS_OCCUPIED))
-                                {
-                                    cellsMerge(input[0], numRows, numColumns, matrix,
-                                        POINTS, CELLS_OCCUPIED, columnLength);
-                                    seeding(difficulty, numRows, numColumns, matrix,
-                                        CELLS_OCCUPIED);
-                                    displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
-                                        CELLS_OCCUPIED, columnLength);
-                                }
-                                else
-                                {
-                                    // Take away one life.
-                                    lives--;
-                                    playing = false;
-                                }
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        std:: cout << "Not that one, cracker!" << std::endl;
-                    }
-                } 
-                else 
-                {
-                    iteration++;
-                    int movement = rand() % (sizeof(movements) / sizeof(char));
-                    cellsMerge(movements[movement], numRows, numColumns, matrix, 
-                        POINTS, CELLS_OCCUPIED, columnLength);
-
-                    if (seeding(difficulty, numRows, numColumns, matrix,
-                            CELLS_OCCUPIED))
-                    {
-                        int movement = rand() %
-                                       (sizeof(movements) / sizeof(char));
-                        cellsMerge(movements[movement], numRows, numColumns, matrix,
-                                   POINTS, CELLS_OCCUPIED, columnLength);
-                        seeding(difficulty, numRows, numColumns, matrix,
-                                CELLS_OCCUPIED);
-                        displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
-                                    CELLS_OCCUPIED, columnLength);
-                    }
-                    else
-                    {
-                        // Take away one life.
-                        lives--;
-                        playing = false;
-                    }
-                }
-
-            }
-
-            // ASK USER IF WANTS TO PLAY AGAIN.
-            keepPlaying = playAgain(lives);
-        }
-        else
-        {
-            std::cout << "You have 0 lives. GAMEOVER." << std::endl;
-            keepPlaying = false;
-        }
-    }    
-}
-
 // MAIN METHOD OF THE GAME.
-void playGame (
+void play (
     int  difficulty,    // Difficulty of the game.
     int  numRows,       // Number of rows in the game.
     int  numColumns,    // Number of columns in the game.
     int  numMaxThreads, // Number of max threads to be run.
     char mode,          // Gaming mode (manual or automatic).
-    int* columnLength   // The length of the bigger number in the column
+    int* columnLength  // The length of the bigger number in the column.
     )
 {
+    bool gameMode = false; // true auto, false manual
+
     switch(mode)
     {
-        case 'm':
-            playGameManual(difficulty, numRows, numColumns, numMaxThreads,
-                           columnLength);
-            break;
-
         case 'a':
-            playGameAutomatic(difficulty, numRows, numColumns, numMaxThreads,
-                              columnLength);
-            break;
+            gameMode = true;
+        break;
     }
+
+    playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
+    gameMode); 
 }
 
 // -----------------------------------------------------------------------------
@@ -888,10 +811,10 @@ int main(int argc, char** argv)
 {
     // Variables needed as game settings.
     char mode;          // Game mode.
-    int  difficulty;    // Difficulty of the game.
-    int  numRows;       // Number of rows in the game.
-    int  numColumns;    // Number of columns in the game.
-    int  numMaxThreads; // Number of max threads to be run.
+     int difficulty;    // Difficulty of the game.
+     int numRows;       // Number of rows in the game.
+     int numColumns;    // Number of columns in the game.
+     int numMaxThreads; // Number of max threads to be run.
     int* columnLength;  // The length of the bigger number in the column
 
     // Used as auxiliary variable for any input in the system
@@ -1002,7 +925,7 @@ int main(int argc, char** argv)
         std::fill_n(columnLength, numColumns, 1);
         
         // EXECUTE GAME.
-        playGame(difficulty, numRows, numColumns, numMaxThreads, mode,
+        play(difficulty, numRows, numColumns, numMaxThreads, mode,
                  columnLength);
     }
 }
@@ -1011,8 +934,14 @@ int main(int argc, char** argv)
 // -----------------------------------------------------------------------------
 // ----------------------------- CUDA METHODS-----------------------------------
 // -----------------------------------------------------------------------------
-cudaError_t cellsMerge(char movement, int row, int column, int* matrix, 
-                       int* POINTS, int* CELLS_OCCUPIED, int* columnLength)
+cudaError_t cellsMerge(
+    char movement,
+     int row, 
+     int column, 
+    int* matrix, 
+    int* POINTS, 
+    int* CELLS_OCCUPIED, 
+    int* columnLength)
 {
     // Variable to operate in the GPU
     int* dev_matrix = 0;
