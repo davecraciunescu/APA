@@ -683,6 +683,7 @@ char randomMovement()
     return movements[rand() % (sizeof(movements) / sizeof(char))]; 
 }
 
+// Playing the game.
 void playGame (
     int  difficulty,    // Difficulty of the game.
     int  numRows,       // Number of rows in game.
@@ -794,41 +795,18 @@ void playGame (
     }
 }
 
-// MAIN METHOD OF THE GAME.
-void play (
-    int  difficulty,    // Difficulty of the game.
-    int  numRows,       // Number of rows in the game.
-    int  numColumns,    // Number of columns in the game.
-    int  numMaxThreads, // Number of max threads to be run.
-    char mode,          // Gaming mode (manual or automatic).
-    int* columnLength  // The length of the bigger number in the column.
-    )
-{
-    bool gameMode = false; // true auto, false manual
-
-    switch(mode)
-    {
-        case 'a':
-            gameMode = true;
-        break;
-    }
-
-    playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
-    gameMode); 
-}
-
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
 // -----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
     // Variables needed as game settings.
-    char mode;          // Game mode.
-     int difficulty;    // Difficulty of the game.
-     int numRows;       // Number of rows in the game.
-     int numColumns;    // Number of columns in the game.
-     int numMaxThreads; // Number of max threads to be run.
-    int* columnLength;  // The length of the bigger number in the column
+    char mode;               // Game mode.
+     int difficulty;         // Difficulty of the game.
+     int numRows;            // Number of rows in the game.
+     int numColumns;         // Number of columns in the game.
+     int numMaxThreads;      // Number of max threads to be run.
+    int* columnLength;       // The length of the bigger number in the column
 
     // Used as auxiliary variable for any input in the system
     std::string input;
@@ -947,6 +925,16 @@ int main(int argc, char** argv)
         columnLength = (int*) malloc(numColumns);
         std::fill_n(columnLength, numColumns, 1);
         
+        bool gameMode = false;
+
+        switch (mode)
+        {
+            case 'a':
+                gameMode = true;   
+            break;
+        }
+
+
         // EXECUTE GAME.
         play(difficulty, numRows, numColumns, numMaxThreads, mode,
              columnLength);
