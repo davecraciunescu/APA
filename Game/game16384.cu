@@ -9,6 +9,7 @@
 #include <string>
 // C++ library for I/O 
 #include <iostream>
+#include <fstream>
 // Calloc, exit, free
 #include <stdlib.h>
 // Rand
@@ -27,16 +28,29 @@
 // -----------------------------------------------------------------------------
 // ------------------------------- HEADERS -------------------------------------
 // -----------------------------------------------------------------------------
-cudaError_t cellsMerge(
-    char movement,          // Direction of the movement. 
-     int row,               // Rows of the table.
-     int column,            // Columns of the table.
-    int* matrix,            // Matrix with values.
-    int* POINTS,            // Number of points.
-    int* CELLS_OCCUPIED,    // Occupied cells.
-    int* columnLength);     // Length of the columns.
+void check_CUDA_Error(const char *msg);
 
-bool playAgain(int lives);
+int getThreadsMaxBlock();
+
+int getMinBoard(int difficulty);
+    
+std::string printHearts(int LIVES);
+
+__host__ void displayGrid(int rows,             // Rows of the table.
+                          int columns,          // Columns of the table.
+                          int* Matrix,          // Matrix with values.
+                          int* POINTS,          // Earned points.
+                          int* LIVES,           // Remaining lives
+                          int* CELLS_OCCUPIED,  // Occupied cells.
+                          int* columnLength);   // Length of the columns.
+    
+__host__ bool seeding(int gameDifficulty,       // Gaming difficulty.
+                      int rows,                 // Rows of the table.
+                      int columns,              // Columns of the table.
+                      int* matrix,              // Matrix with values.
+                      int* CELLS_OCCUPIED);     // Occupied cells.
+
+bool playAgain(int *LIVES);
 
 char randomMovement();
 
@@ -59,6 +73,24 @@ void saveGame(
 
 void loadGame();
 
+cudaError_t cellsMerge(
+    char movement,          // Direction of the movement. 
+     int row,               // Rows of the table.
+     int column,            // Columns of the table.
+    int* matrix,            // Matrix with values.
+    int* POINTS,            // Number of points.
+    int* CELLS_OCCUPIED,    // Occupied cells.
+    int* columnLength);     // Length of the columns.
+
+cudaError_t cellsMerge(
+    char movement,          // Direction of the movement.
+    int  numRows,           // Rows of the table.
+    int  numColumns,        // Columns of the table.
+    int* matrix,            // Matrix with values.
+    int* POINTS,            // Number of points.
+    int* CELLS_OCCUPIED,    // Occupied cells.
+    int* columnLength);     // Length of the columns.
+
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
 // -----------------------------------------------------------------------------
@@ -78,8 +110,6 @@ __global__ void computeMatrixUp(int  numRows,
 
     if(col < numColumns)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = 0; i < numRows - 1; i++)
         {
             if(matrix[i * numRows + col] > 0 && 
@@ -88,10 +118,9 @@ __global__ void computeMatrixUp(int  numRows,
                 matrix[i * numRows + col] *= 2;
                 matrix[(i + 1) * numRows + col] = 0;
       
-                (*POINTS) += matrix[i * numRows + col];
-                (*CELLS_OCCUPIED)--;
+                atomicAdd(POINTS, matrix[i * numRows + col]);
+                atomicAdd(CELLS_OCCUPIED, -1);
 
-                __syncthreads();
                 /*
                 if(columnLength[col] 
                    < 
@@ -121,8 +150,6 @@ __global__ void computeMatrixDown(int  numRows,
 
     if(col < numColumns)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = numRows - 1; i > 0; i--)
         {
             if(matrix[i * numRows + col] > 0 && 
@@ -131,10 +158,9 @@ __global__ void computeMatrixDown(int  numRows,
                 matrix[i * numRows + col] *= 2;
                 matrix[(i - 1) * numRows + col] = 0;
                 
-                (*POINTS) += matrix[i * numRows + col];
-                (*CELLS_OCCUPIED)--;
+                atomicAdd(POINTS, matrix[i * numRows + col]);
+                atomicAdd(CELLS_OCCUPIED, -1);
                 
-                __syncthreads();
                 /* 
                 if(columnLength[col] 
                    < 
@@ -164,8 +190,6 @@ __global__ void computeMatrixLeft(int  numRows,
 
     if(row < numRows)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = 0; i < numColumns - 1; i++)
         {
             if(matrix[row * numRows + i] > 0 && 
@@ -174,10 +198,9 @@ __global__ void computeMatrixLeft(int  numRows,
                 matrix[row * numRows + i] *= 2;
                 matrix[row * numRows + (i + 1)] = 0;
                 
-                (*POINTS) += matrix[row * numRows + i];
-                (*CELLS_OCCUPIED)--;
+                atomicAdd(POINTS, matrix[row * numRows + i]);
+                atomicAdd(CELLS_OCCUPIED, -1);
                 
-                __syncthreads();
                 /*
                 if(columnLength[i] 
                    < 
@@ -207,8 +230,6 @@ __global__ void computeMatrixRight(int  numRows,
 
     if(row < numRows)
     {
-        // TODO: Probably will need to change the numRows if TILES or shared 
-        // used
         for(int i = numColumns - 1; i > 0; i--)
         {
             if(matrix[row * numRows + i] > 0 && 
@@ -217,10 +238,9 @@ __global__ void computeMatrixRight(int  numRows,
                 matrix[row * numRows + i] *= 2;
                 matrix[row * numRows + (i - 1)] = 0;
 
-                (*POINTS) += matrix[row * numRows + i];
-                (*CELLS_OCCUPIED)--;
+                atomicAdd(POINTS, matrix[row * numRows + i]);
+                atomicAdd(CELLS_OCCUPIED, -1);
                 
-                __syncthreads();
                 /*
                 if(columnLength[i] 
                    < 
@@ -334,6 +354,7 @@ __global__ void fillSpace(int* matrix, char movement, int rows, int columns)
 // -----------------------------------------------------------------------------
 // ------------------------- FUNCTIONALITY METHODS  ----------------------------
 // -----------------------------------------------------------------------------
+
 // Method which allows to check for errors
 __host__ void check_CUDA_Error(const char *msg)
 {
@@ -378,6 +399,7 @@ __host__ int getThreadsMaxBlock()
     return threadsBlock;
 }
 
+// Gets the apropiate sixe for the gaming mode specified
 __host__ int getMinBoard(int difficulty)
 {
     // In each difficulty level, the player should be allowed to perform at
@@ -396,23 +418,31 @@ __host__ int getMinBoard(int difficulty)
 // -----------------------------------------------------------------------------
 // ------------------------------ GAME METHODS ---------------------------------
 // -----------------------------------------------------------------------------
-__host__ std::string printHearts(int* LIVES)
+
+// Returns as many Pixel Art Herats as specified by parameter.
+__host__ std::string printHearts(int LIVES)
 {
     std::string hearts;
 
-    for(int i = 0; i < *LIVES; i++) {
+    for(int i = 0; i < LIVES; i++) {
         hearts += "<3 ";
     }
 
     return hearts;
 }
 
-__host__ void displayGrid(int rows, int columns, int* Matrix, 
-                          int* POINTS, int* LIVES, int* CELLS_OCCUPIED,
+// Prints the game's grid, including buttons, lives and punctuation.
+__host__ void displayGrid(int rows, 
+                          int columns, 
+                          int* Matrix, 
+                          int* POINTS, 
+                          int* LIVES, 
+                          int* CELLS_OCCUPIED,
                           int* columnLength)
 {
-    // system("clear");
-    
+    system("clear");
+   
+    // Game's title
     std::cout << "                       "
               << "  _    ____     __       __    __ __      " 
               << std::endl;
@@ -435,9 +465,11 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
               << "    \\/_/\\/___/  \\/___/   \\/___/     \\/_/  " 
               << std::endl << std::endl;
 
-    // Two extra iterations to print the upper part of the matrix
+    // Prints the matrix.
+    // Two extra iterations to print the upper part of the matrix.
     for(int i = -2; i < rows; i++)
     {
+        // Rows IDs.
         if(i < 0) {
             std::cout << "      ";
         } else if(i + 1 < 10) {
@@ -446,8 +478,10 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
             std::cout << i + 1 << "- ";
         }
 
+        // Rows.
         for(int j = 0; j < columns; j++)
         {
+            // Columns IDs.
             if(i == -2) {
                 if(j + 1 < 10) {
                     std::cout << j + 1 << "    ";
@@ -456,8 +490,9 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
                 }
             } else if(i == -1) {
                 std::cout << "|    "; 
-            } else  {
-
+            } else 
+            {
+                // Matrix's values printed by colors depending on their value.
                 switch(Matrix[i * rows + j])
                 {
                     // LIGHTWHITE
@@ -508,7 +543,9 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
                                   << " |\033[0m";
                         break;
 
-                    // TODO
+                    // TODO: At the begging it was used other system for
+                    // coloring, but it end up not working. In the current
+                    // system used it hasn't been found any BROWN color.
                     // BROWN
                     case 512:
                         std::cout << "\033[1;37m| " << Matrix[i * rows + j] 
@@ -545,6 +582,7 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
                                   << " |\033[0m";
                         break;
 
+                    // NO COLOR
                     default:
                         std::cout << "| " << Matrix[i * rows + j] << " |";
                         
@@ -556,6 +594,7 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
         std::cout << std::endl;
     }
 
+    // Controls and options.
     std::cout << std::endl << std::endl << std::endl 
               << "Controls:            Save    Quit     Points:"
               << "        Cells           Lives:"                   << std::endl
@@ -565,11 +604,15 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
               << " ___    ___    ___   | G |   | Q |    "           << *POINTS 
               << "              " << *CELLS_OCCUPIED                << std::endl
               << "| A |  | S |  | D |                                          "
-              << "        " << printHearts(LIVES) 
+              << "        " <<  printHearts(*LIVES) 
               << std::endl << std::endl;
 }
 
-__host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
+// Inserts new seeds into the gaming board randomly.
+__host__ bool seeding(int gameDifficulty, 
+                      int rows, 
+                      int columns, 
+                      int* matrix,
                       int* CELLS_OCCUPIED)
 {
     // Number of seeds to be planted in the board
@@ -589,6 +632,7 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
     // Depending on the game difficulty, the number of seeds may vary
     switch(gameDifficulty)
     {
+        // EASY
         case 1:
             seeds = 15;
             differentValues = 3;
@@ -598,6 +642,7 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
             seedsValues[2] = 8;
             break;
 
+        // HARD
         case 2:
             seeds = 8;
             differentValues = 2;
@@ -613,7 +658,7 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
     while(canPlay && seedsPlanted < seeds)
     {
         // Still empty cells
-        if((*CELLS_OCCUPIED) <= (rows * columns))
+        if((*CELLS_OCCUPIED) < (rows * columns))
         {
             // Position within the matrix
             position = rand() % (rows * columns);
@@ -639,20 +684,23 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
 /**
 * Asks user if will play again.
 */
-bool playAgain(int lives)
+bool playAgain(int *LIVES)
 {
-    bool willPlayAgain = false;
+    // Allows to know if the user wants to play once he has lost a live.
+    bool willPlayAgain;
 
-    std::cout << "You currently have: " << lives << " lives." << std::endl;
+    std::cout << "You currently have: " << *LIVES << " lives." << std::endl;
     std::cout << "Do you want to play again (y/n).";
 
     std::string input;
-    std::cin >> input;
 
     bool invalid = true;
 
+    // Asks for an input as long as it is not YES or NO the answer given.
     while (invalid)
     {
+        std::cin >> input;
+
         if (input.length() == 1)
         {
             switch(input[0])
@@ -665,6 +713,7 @@ bool playAgain(int lives)
                 
                 case 'n':
                     std::cout << "Thanks for playing." << std::endl;
+                    willPlayAgain   = false;
                     invalid         = false;
                     break;
                 
@@ -791,7 +840,11 @@ void playGame (
                             else
                             {
                                 lives--; // Take away one life.
-                              playing = false;
+                                *CELLS_OCCUPIED = 0;
+                                free(matrix);
+                                matrix = (int*) calloc(numRows * numColumns,
+                                                       sizeof(int));
+                                playing = false;
                             }
                         break;
                     }
@@ -802,8 +855,10 @@ void playGame (
                 }
             }
 
+            playing = true;
+
             // Ask if user wants to play again.
-            keepPlaying = playAgain(lives);
+            keepPlaying = playAgain(LIVES);
         }
         else
         {
@@ -850,7 +905,6 @@ void saveGame(
 // Retrieves a game from a saved status and reloads it into memory.
 void loadGame();
 
-
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
 // -----------------------------------------------------------------------------
@@ -867,7 +921,7 @@ int main(int argc, char** argv)
     // Used as auxiliary variable for any input in the system
     std::string input;
 
-    system("clear");
+    system("cls");
     std::cout << "Processing game settings" << std::endl;
 
     if(argc == 5)
@@ -981,7 +1035,7 @@ int main(int argc, char** argv)
         columnLength = (int*) malloc(numColumns);
         std::fill_n(columnLength, numColumns, 1);
         
-        bool gameMode = (mode=='a')?true:false;
+        bool gameMode = (mode == 'a');
 
         // EXECUTE GAME.
         playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
@@ -1020,6 +1074,7 @@ cudaError_t cellsMerge(
         dimensionLength = numRows;
     }
 
+
     // GPU threads distribution
     dim3 dimGrid(dimensionLength / TILE_WIDTH, 1);
     dim3 dimBlock(TILE_WIDTH, 1);
@@ -1039,7 +1094,7 @@ cudaError_t cellsMerge(
     check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
 
     cudaMalloc((void**) &dev_colLen, numColumns * sizeof(int));
-    check_CUDA_Error("cudaMalloc failed at CELLS_OCCUPIED!\n");
+    check_CUDA_Error("cudaMalloc failed at ColumnLength!\n");
     
     // Memory Transfer: CPU -> GPU
     cudaMemcpy(dev_matrix, matrix, numRows * numColumns * sizeof(int),
@@ -1063,6 +1118,8 @@ cudaError_t cellsMerge(
      *     The number of threads is the number of columns.
      * If the movement is LEFT or RIGHT 
      *     The number of threads is the number fo rows.
+     * In any case, it is taken a certain TILE_WIDTH to optimize the execution
+     * by using several blocks for the same operation.
      */
     switch(movement)
     {
@@ -1127,10 +1184,6 @@ cudaError_t cellsMerge(
             break;
     }
     
-    // Waits for kernel to finish
-    cudaDeviceSynchronize();
-    check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
-
     // Waits for kernel to finish
     cudaDeviceSynchronize();
     check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
