@@ -15,10 +15,9 @@
 #include <cstdlib>
 // Time
 #include <time.h>
-// Graphics
-#include <conio.h>
-#include <windows.h>
-
+// Slepp
+#include <chrono>
+#include <thread>
 
 // Size of the tile to be used
 #define TILE_WIDTH 1
@@ -242,7 +241,7 @@ __global__ void fillSpace(int* matrix, char movement, int rows, int columns)
 }
 
 // -----------------------------------------------------------------------------
-// -------------------------- CUDA RELATED METHODS -----------------------------
+// ------------------------- FUNCTIONALITY METHODS  ----------------------------
 // -----------------------------------------------------------------------------
 // Method which allows to check for errors
 __host__ void check_CUDA_Error(const char *msg)
@@ -291,6 +290,17 @@ __host__ int getThreadsBlock()
 // -----------------------------------------------------------------------------
 // ------------------------------ GAME METHODS ---------------------------------
 // -----------------------------------------------------------------------------
+__host__ std::string printHearts(int* LIVES)
+{
+    std::string hearts;
+
+    for(int i = 0; i < *LIVES; i++) {
+        hearts += "<3 ";
+    }
+
+    return hearts;
+}
+
 __host__ void displayGrid(int rows, int columns, int* Matrix, 
                           int* POINTS, int* LIVES, int* CELLS_OCCUPIED)
 {
@@ -318,123 +328,116 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
             } else if(i == -1) {
                 std::cout << "|    "; 
             } else  {
-                std::cout << "| " << Matrix[i * rows + j] << " |";
 
-                /*
                 switch(Matrix[i * rows + j])
                 {
-                    // WHITE
+                    // LIGHTWHITE
                     case 2:
-                        //SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                        //                        15);
-                        
-                        std::cout << "\033[;| " << Matrix[i * rows + j] << " |";
+                        std::cout << "\033[1;37;1m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
-                    
-                    // LIGHTGRAY
+ 
+                    // WHITE
                     case 4:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                7);
+                        std::cout << "\033[1;37m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
                     
                     // DARKGRAY
                     case 8:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                8);
+                        std::cout << "\033[1;30;1m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
                     
                     // YELLOW
                     case 16:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                14);
+                        std::cout << "\033[1;33m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
 
                     // LIGHTMAGENTA
                     case 32:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                13);
+                        std::cout << "\033[1;35;1m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
                     
                     // MAGENTA
                     case 64:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                5);
+                        std::cout << "\033[1;35m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
 
                     // LIGHTRED
                     case 128:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                12);
+                        std::cout << "\033[1;31;1m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
 
                     // RED
                     case 256:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                4);
+                        std::cout << "\033[1;31m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
 
+                    // TODO
                     // BROWN
                     case 512:
-                        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                                                6);
+                        std::cout << "\033[1;37m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
 
                     // LIGHTGREEN
                     case 1024:
-                        Setconsoletextattribute(getstdhandle(std_output_handle),
-                                                10);
+                        std::cout << "\033[1;32;1m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
 
                     // GREEN
                     case 2048:
-                        Setconsoletextattribute(getstdhandle(std_output_handle),
-                                                2);
+                        std::cout << "\033[1;32m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
                     
                     // LIGHTCYAN
                     case 4096:
-                        Setconsoletextattribute(getstdhandle(std_output_handle),
-                                                11);
+                        std::cout << "\033[1;36;1m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
 
                     // CYAN
                     case 8192:
-                        Setconsoletextattribute(getstdhandle(std_output_handle),
-                                                3);
+                        std::cout << "\033[1;36m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
+
                     // LIGHTBLUE
                     case 16384:
-                        Setconsoletextattribute(getstdhandle(std_output_handle),
-                                                9);
+                        std::cout << "\033[1;34;1m| " << Matrix[i * rows + j] 
+                                  << " |\033[0m";
                         break;
-                    
+
                     default:
-                       // Setconsoletextattribute(getstdhandle(std_output_handle),
-                         //                       1); 
+                        std::cout << "| " << Matrix[i * rows + j] << " |";
+                        
                         break;
-                }*/
+                }
             }
         }
 
         std::cout << std::endl;
     }
 
-    std::cout << std::endl;
-
-    std::cout <<                          std::endl 
-              <<                          std::endl 
-              << "Controls:               Points:             Lives:"
-              <<          "             Cells Occupied:"          
-              <<                          std::endl
-              << "        ___"         << std::endl
-              << "       | W |            "        
-              <<                          *POINTS 
-              << "                   " << *LIVES
-              << "                   " << *CELLS_OCCUPIED
-              <<                          std::endl
-              << " ___    ___    ___"  << std::endl
-              << "| A |  | S |  | D |" << std::endl
-              <<                          std::endl;
+    std::cout << std::endl << std::endl << std::endl 
+              << "Controls:            Save    Quit     Points:"
+              << "        Cells           Lives:"                   << std::endl
+              << "        ___                           "
+              << "               Occupied:"                         << std::endl
+              << "       | W |          ___     ___     "           << std::endl
+              << " ___    ___    ___   | G |   | Q |    "           << *POINTS 
+              << "              " << *CELLS_OCCUPIED                << std::endl
+              << "| A |  | S |  | D |                                          "
+              << "        " << printHearts(LIVES) 
+              << std::endl << std::endl;
 }
 
 __host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix,
@@ -504,13 +507,317 @@ __host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix,
 
 }
 
+/**
+* Asks user if will play again.
+*/
+bool playAgain(int lives)
+{
+    bool willPlayAgain = false;
+
+    std::cout << "You currently have: " << lives << " lives." << std::endl;
+    std::cout << "Do you want to play again (y/n).";
+
+    std::string input;
+    std::cin >> input;
+
+    bool invalid = true;
+
+    while (invalid)
+    {
+        if (input.length() == 1)
+        {
+            switch(input[0])
+            {
+                case 'y':
+                    std::cout << "Alright, playing again." << std::endl;
+                    willPlayAgain   = true;
+                    invalid         = false;
+                    break;
+                
+                case 'n':
+                    std::cout << "Thanks for playing." << std::endl;
+                    invalid         = false;
+                    break;
+                
+                default:
+                    std::cout << "Please enter a valid value." << std::endl;
+                    std::cout << "Do you want to play again (y/n).";
+                    break;
+            }
+        }
+        else
+        {
+            std::cout << "Please enter a valid value." << std::endl;
+        }
+    }
+    return willPlayAgain;
+}
+
+void playGameManual (
+    int  difficulty,    // Difficulty of the game.
+    int  numRows,       // Number of rows in the game.
+    int  numColumns,    // Number of columns in the game.
+    int  numMaxThreads  // Number of max threads to be run.
+    )
+{
+
+    // Auxiliary input variable.
+    std::string input;
+
+    // Variables needed within the game.
+    int   lives = 5;    int* LIVES          = &lives;
+    int  points = 0;    int* POINTS         = &points;
+    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc; 
+
+    int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
+    bool      playing = true;
+    bool  keepPlaying = true;
+    bool       winner = true;
+
+    // MAIN GAME LOOP.
+    while (keepPlaying)
+    {   
+        // SEED GAME INITIAL STATE.
+        seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
+        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED);
+
+        std::cout << "Starting Game." << std::endl;
+
+        if (lives > 0)
+        {
+            while (playing)
+            {
+                std::cin >> input;
+
+                if (input.length() == 1)
+                {
+                    switch (input[0])
+                    {
+                        case 'g':
+                            // TODO SAVE GAME.
+                        break;
+                        
+                        case 'q':
+                            playing        = false;
+                            keepPlaying    = false;
+                            winner         = false;
+                        break;
+                        
+                        default:
+                            if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                            {
+                                cellsMerge(input[0], numRows, numColumns, matrix,
+                                    POINTS, CELLS_OCCUPIED);
+                                seeding(difficulty, numRows, numColumns, matrix,
+                                    CELLS_OCCUPIED);
+                                displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
+                                    CELLS_OCCUPIED);
+                            }
+                            else
+                            {
+                                // Take away one life.
+                                lives--;
+                                playing = false;
+                            }
+                        break;
+                    }
+                }
+                else
+                {
+                    std:: cout << "Not that one, cracker!" << std::endl;
+                }
+            }
+
+            // ASK USER IF WANTS TO PLAY AGAIN.
+            keepPlaying = playAgain(lives);
+        }
+        else
+        {
+            std::cout << "You have 0 lives. GAMEOVER." << std::endl;
+            keepPlaying = false;
+        }
+    }
+
+    // Reset the value of winner.
+    winner = true;
+}
+
+void playGameAutomatic (
+    int  difficulty,    // Difficulty of the game.
+    int  numRows,       // Number of rows in the game.
+    int  numColumns,    // Number of columns in the game.
+    int  numMaxThreads  // Number of max threads to be run.
+    )
+{
+
+    // Auxiliary input variable.
+    std::string input;
+
+    // Variables needed within the game.
+    int   lives = 5;    int* LIVES          = &lives;
+    int  points = 0;    int* POINTS         = &points;
+    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc; 
+
+    int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
+    bool      playing = true;
+    bool  keepPlaying = true;
+    bool       winner = true;
+
+    char movements [4] = {'w', 'a', 's', 'd'};
+
+    // Initialize random seed
+    std::srand(time(NULL));
+
+    /* Used to know when to ask the user for an action:
+     * - Continue.
+     * - Quit.
+     * - Save.
+     */
+    int iteration = 0;
+
+    // MAIN GAME LOOP.
+    while (keepPlaying)
+    {   
+        // SEED GAME INITIAL STATE.
+        seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
+        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED);
+
+        std::cout << "Starting Game." << std::endl;
+
+        if (lives > 0)
+        {
+            while (playing)
+            {   
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+
+                if(iteration % 10 == 0)
+                {
+                    std::cout << "Do you wish to SAVE (G) your game? "
+                              << std::endl
+                              << "Or maybe to QUIT (Q) the game?"
+                              << std::endl
+                              << "If you want to keep playing in the "
+                              << "automatical mode PRESS ANY KEY."
+                              << std::endl;
+
+                    std::cin >> input;
+                    iteration = 1;
+                    
+                    if (input.length() == 1)
+                    {
+                        switch (input[0])
+                        {
+                            case 'g':
+                                // TODO SAVE GAME.
+                            break;
+                            
+                            case 'q':
+                                playing        = false;
+                                keepPlaying    = false;
+                                winner         = false;
+                            break;
+                            
+                            default:
+                                if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                                {
+                                    cellsMerge(input[0], numRows, numColumns, matrix,
+                                        POINTS, CELLS_OCCUPIED);
+                                    seeding(difficulty, numRows, numColumns, matrix,
+                                        CELLS_OCCUPIED);
+                                    displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
+                                        CELLS_OCCUPIED);
+                                }
+                                else
+                                {
+                                    // Take away one life.
+                                    lives--;
+                                    playing = false;
+                                }
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        std:: cout << "Not that one, cracker!" << std::endl;
+                    }
+                } 
+                else 
+                {
+                    iteration++;
+
+                    if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                    {
+                        int movement = rand() %
+                                       (sizeof(movements) / sizeof(char));
+                        cellsMerge(movements[movement], numRows, numColumns, matrix,
+                                   POINTS, CELLS_OCCUPIED);
+                        seeding(difficulty, numRows, numColumns, matrix,
+                                CELLS_OCCUPIED);
+                        displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
+                                    CELLS_OCCUPIED);
+                    }
+                    else
+                    {
+                        // Take away one life.
+                        lives--;
+                        playing = false;
+                    }
+                }
+
+            }
+
+            // ASK USER IF WANTS TO PLAY AGAIN.
+            keepPlaying = playAgain(lives);
+        }
+        else
+        {
+            std::cout << "You have 0 lives. GAMEOVER." << std::endl;
+            keepPlaying = false;
+        }
+    }
+
+    // Reset the value of winner.
+    winner = true;
+    
+}
+
+// MAIN METHOD OF THE GAME.
+void playGame (
+    int  difficulty,    // Difficulty of the game.
+    int  numRows,       // Number of rows in the game.
+    int  numColumns,    // Number of columns in the game.
+    int  numMaxThreads, // Number of max threads to be run.
+    char mode           // Gaming mode (manual or automatic).
+    )
+{
+    switch(mode)
+    {
+        case 'm':
+            playGameManual(difficulty, numRows, numColumns, numMaxThreads);
+            break;
+
+        case 'a':
+            playGameAutomatic(difficulty, numRows, numColumns, numMaxThreads);
+            break;
+    }
+}
+
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
 // -----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+    // Variables needed as game settings.
+    char mode;          // Game mode.
+    int  difficulty;    // Difficulty of the game.
+    int  numRows;       // Number of rows in the game.
+    int  numColumns;    // Number of columns in the game.
+    int  numMaxThreads; // Number of max threads to be run.
+    
     // Used as auxiliary variable for any input in the system
     std::string input;
+    
 
     system("clear");
     std::cout << "Processing game settings" << std::endl;
@@ -522,7 +829,7 @@ int main(int argc, char** argv)
         // --------------------------------------------------------------------
         // --------------------------- PLAYING MODE ---------------------------
         // --------------------------------------------------------------------
-        if(input.compare("m")) 
+        if(input.compare("m") == 0) 
         {
             std::cout << "Setting to MANUAL" << std::endl;   
             std::cout << "-------------------------------" 
@@ -530,7 +837,7 @@ int main(int argc, char** argv)
                       << "-------------------------------"
                       << std::endl;
             mode = 'm';
-        } else if (input.compare("a"))
+        } else if (input.compare("a") == 0)
         {
             std::cout << "Setting to AUTOMATIC" << std::endl;
             std::cout << "-----------------------------" 
@@ -553,7 +860,7 @@ int main(int argc, char** argv)
         // --------------------------------------------------------------------
         // ------------------------ PLAYING DIFFICULTY ------------------------
         // --------------------------------------------------------------------
-        if(input.compare("1")) 
+        if(input.compare("1") == 0) 
         {
             std::cout << "Setting to EASY" << std::endl;   
             std::cout << "--------------------------------" 
@@ -561,7 +868,7 @@ int main(int argc, char** argv)
                       << "--------------------------------"
                       << std::endl;
             difficulty = 1;
-        } else if (input.compare("2"))
+        } else if (input.compare("2") == 0)
         {
 
             std::cout << "Setting to HARD" << std::endl;   
@@ -612,146 +919,10 @@ int main(int argc, char** argv)
         } 
        
         // EXECUTE GAME.
-        playGame(difficulty, numRows, numColumns, numMaxThreads);
+        playGame(difficulty, numRows, numColumns, numMaxThreads, mode);
     }
 }
 
-// MAIN METHOD OF THE GAME.
-void playGame (
-    int  difficulty,    // Difficulty of the game.
-    int  numRows,       // Number of rows in the game.
-    int  numColumns,    // Number of columns in the game.
-    int  numMaxThreads  // Number of max threads to be run.
-    )
-{
-    // Auxiliary input variable.
-    std::string input;
-
-    // Variables needed within the game.
-    int   lives = 5;    int* LIVES          = &lives;
-    int  points = 0;    int* POINTS         = &points;
-    int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc; 
-
-    char    mode; // Game Mode.
-
-    int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
-    bool      playing = true;
-    bool  keepPlaying = true;
-    bool       winner = true;
-
-    // MAIN GAME LOOP.
-    while (keepPlaying)
-    {   
-        // SEED GAME INITIAL STATE.
-        seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
-        displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELL_OCCUPIED);
-
-        std::cout << "Starting Game." << std::endl;
-
-        if (lives > 0)
-        {
-            while (playing)
-            {
-                std::cin >> input;
-
-                if (input.length == 1)
-                {
-                    switch (input[0])
-                    {
-                        case 'g':
-                            // TODO SAVE GAME.
-                        break;
-                        
-                        case 'q':
-                            playing         = false;
-                            keep_playing    = false;
-                            winner          = false;
-                        break;
-                        
-                        default:
-                            if (winner) // TODO: CONNECT WINNER WITH KERNEL.
-                            {
-                                cellsMerge(input[0], numRows, numColumns, matrix,
-                                    POINTS, CELLS_OCCUPIED);
-                                seeding(difficulty, numRows, numColumns, matrix,
-                                    CELLS_OCCUPIED);
-                                displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
-                                    CELLS_OCCUPIED);
-                            }
-                            else
-                            {
-                                // Take away one life.
-                                lives--;
-                                playing = false;
-                            }
-                        break;
-                    }
-                }
-                else
-                {
-                    std:: cout << "Not that one, cracker!" << std::endl;
-                }
-            }
-
-            // ASK USER IF WANTS TO PLAY AGAIN.
-            keepPlaying = playAgain(lives);
-        }
-        else
-        {
-            std::cout << "You have 0 lives. GAMEOVER." << std::endl;
-            keepPlaying = false;
-        }
-    }
-
-    // Reset the value of winner.
-    winner = true;
-}
-
-/**
-* Asks user if will play again.
-*/
-bool playAgain(int lives)
-{
-    bool willPlayAgain = false;
-
-    std::cout << "You currently have: " << lives << " lives." << std::endl;
-    std::cout << "Do you want to play again (y/n).";
-
-    std::string input;
-    std::cin >> input;
-
-    bool invalid = true;
-
-    while (invalid)
-    {
-        if (input.length == 1)
-        {
-            switch(input[0])
-            {
-                case 'y':
-                    std::cout << "Alright, playing again." << std::endl;
-                    willPlayAgain   = true;
-                    invalid         = false;
-                    break;
-                
-                case 'n':
-                    std::cout << "Thanks for playing." << std::endl;
-                    invalid         = false;
-                    break;
-                
-                default:
-                    std::cout << "Please enter a valid value." << std::endl;
-                    std::cout << "Do you want to play again (y/n).";
-                    break;
-            }
-        }
-        else
-        {
-            std::cout << "Please enter a valid value." << std::endl;
-        }
-    }
-    return willPlayAgain;
-}
 
 // -----------------------------------------------------------------------------
 // ----------------------------- CUDA METHODS-----------------------------------
