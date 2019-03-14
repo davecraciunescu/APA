@@ -48,17 +48,6 @@ void playGame(
     int* columnLength,      // Length of the column.
     bool automatic);        // Automatic gamemode.
 
-void play(
-     int difficulty,        // Difficulty of the game.
-     int numRows,           // Number of rows.
-     int numColumns,        // Number of columns.
-     int numMaxThreads,     // Max number of threads.
-    char mode,              // Gaming mode (manual or automatic).
-    int* columnLength);     // Length of the bigger number in column.
-
-
-
-
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
 // -----------------------------------------------------------------------------
@@ -925,15 +914,7 @@ int main(int argc, char** argv)
         columnLength = (int*) malloc(numColumns);
         std::fill_n(columnLength, numColumns, 1);
         
-        bool gameMode = false;
-
-        switch (mode)
-        {
-            case 'a':
-                gameMode = true;   
-            break;
-        }
-
+        bool gameMode = (mode=='a')?true:false;
 
         // EXECUTE GAME.
         playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
