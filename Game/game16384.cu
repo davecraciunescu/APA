@@ -385,11 +385,11 @@ __host__ int getMinBoard(int difficulty)
 // -----------------------------------------------------------------------------
 // ------------------------------ GAME METHODS ---------------------------------
 // -----------------------------------------------------------------------------
-__host__ std::string printHearts(int* LIVES)
+__host__ std::string printHearts(int LIVES)
 {
     std::string hearts;
 
-    for(int i = 0; i < *LIVES; i++) {
+    for(int i = 0; i < LIVES; i++) {
         hearts += "<3 ";
     }
 
@@ -400,7 +400,7 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
                           int* POINTS, int* LIVES, int* CELLS_OCCUPIED,
                           int* columnLength)
 {
-    // system("clear");
+    system("cls");
     
     std::cout << "                       "
               << "  _    ____     __       __    __ __      " 
@@ -554,7 +554,7 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
               << " ___    ___    ___   | G |   | Q |    "           << *POINTS 
               << "              " << *CELLS_OCCUPIED                << std::endl
               << "| A |  | S |  | D |                                          "
-              << "        " << printHearts(LIVES) 
+              << "        " <<  printHearts(*LIVES) 
               << std::endl << std::endl;
 }
 
@@ -628,20 +628,21 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
 /**
 * Asks user if will play again.
 */
-bool playAgain(int lives)
+bool playAgain(int *LIVES)
 {
-    bool willPlayAgain = false;
+    bool willPlayAgain;
 
-    std::cout << "You currently have: " << lives << " lives." << std::endl;
+    std::cout << "You currently have: " << *LIVES << " lives." << std::endl;
     std::cout << "Do you want to play again (y/n).";
 
     std::string input;
-    std::cin >> input;
 
     bool invalid = true;
 
     while (invalid)
     {
+        std::cin >> input;
+
         if (input.length() == 1)
         {
             switch(input[0])
@@ -654,6 +655,7 @@ bool playAgain(int lives)
                 
                 case 'n':
                     std::cout << "Thanks for playing." << std::endl;
+                    willPlayAgain   = false;
                     invalid         = false;
                     break;
                 
@@ -772,6 +774,10 @@ void playGame (
                             else
                             {
                                 lives--; // Take away one life.
+                                *CELLS_OCCUPIED = 0;
+                                free(matrix);
+                                matrix = (int*) calloc(numRows * numColumns,
+                                                       sizeof(int));
                                 playing = false;
                             }
                         break;
@@ -783,8 +789,10 @@ void playGame (
                 }
             }
 
+            playing = true;
+
             // Ask if user wants to play again.
-            keepPlaying = playAgain(lives);
+            keepPlaying = playAgain(LIVES);
         }
         else
         {
@@ -810,7 +818,7 @@ int main(int argc, char** argv)
     // Used as auxiliary variable for any input in the system
     std::string input;
 
-    system("clear");
+    system("cls");
     std::cout << "Processing game settings" << std::endl;
 
     if(argc == 5)
