@@ -440,7 +440,7 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
               << std::endl << std::endl;
 }
 
-__host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix,
+__host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
                       int* CELLS_OCCUPIED)
 {
     // Number of seeds to be planted in the board
@@ -452,6 +452,8 @@ __host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix,
     // Position from the matrix where the seed is going to be planted. 
     // Used auxiliary variable
     int position;
+
+    bool canPlay = true; // Defines if player has lost the game.
 
     // Depending on the game difficulty, the number of seeds may vary
     switch(gameDifficulty)
@@ -497,14 +499,12 @@ __host__ void seeding(int gameDifficulty, int rows, int columns, int* matrix,
         } 
         else
         {
-            std::cout << "There are no more empty cells, you have lost a live"  << std::endl;
-            // TODO:
-            // Probably it would be needed decrease the number of lives
-            // Therefore, it is needed a new method for that, called here
+            std::cout << "There are no more empty cells, you have lost a life"  << std::endl;
+            canPlay = false;
         }
 
     }
-
+    return canPlay;
 }
 
 /**
@@ -572,13 +572,17 @@ void playGameManual (
     int*       matrix = (int*) calloc(numRows * numColumns, sizeof(int)); 
     bool      playing = true;
     bool  keepPlaying = true;
-    bool       winner = true;
 
     // MAIN GAME LOOP.
     while (keepPlaying)
     {   
         // SEED GAME INITIAL STATE.
-        seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED);
+        if (!seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED))
+        {
+            std::cout << "ERROR. Table was not reset before seeding." << std::endl;
+            exit(1);
+        }
+        
         displayGrid(numRows, numColumns, matrix, POINTS, LIVES, CELLS_OCCUPIED);
 
         std::cout << "Starting Game." << std::endl;
@@ -600,16 +604,15 @@ void playGameManual (
                         case 'q':
                             playing        = false;
                             keepPlaying    = false;
-                            winner         = false;
                         break;
                         
                         default:
-                            if (winner) // TODO: CONNECT WINNER WITH KERNEL.
-                            {
-                                cellsMerge(input[0], numRows, numColumns, matrix,
-                                    POINTS, CELLS_OCCUPIED);
-                                seeding(difficulty, numRows, numColumns, matrix,
-                                    CELLS_OCCUPIED);
+                            cellsMerge(input[0], numRows, numColumns, matrix, POINTS, 
+                                CELLS_OCCUPIED);
+
+                            // Check if board is full.
+                            if (seeding(difficulty, numRows, numColumns, matrix, CELLS_OCCUPIED))
+                            {                   
                                 displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
                                     CELLS_OCCUPIED);
                             }
@@ -637,9 +640,6 @@ void playGameManual (
             keepPlaying = false;
         }
     }
-
-    // Reset the value of winner.
-    winner = true;
 }
 
 void playGameAutomatic (
@@ -688,7 +688,6 @@ void playGameAutomatic (
         {
             while (playing)
             {   
-
                 std::this_thread::sleep_for(std::chrono::milliseconds(1200));
 
                 if(iteration % 10 == 0)
@@ -715,16 +714,15 @@ void playGameAutomatic (
                             case 'q':
                                 playing        = false;
                                 keepPlaying    = false;
-                                winner         = false;
                             break;
                             
                             default:
-                                if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                                cellsMerge(input[0], numRows, numColumns,
+                                    matrix, POINTS, CELLS_OCCUPIED);
+                            
+                                if (seeding(difficulty, numRows, numColumns, matrix, 
+                                    CELLS_OCCUPIED))
                                 {
-                                    cellsMerge(input[0], numRows, numColumns, matrix,
-                                        POINTS, CELLS_OCCUPIED);
-                                    seeding(difficulty, numRows, numColumns, matrix,
-                                        CELLS_OCCUPIED);
                                     displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
                                         CELLS_OCCUPIED);
                                 }
@@ -745,15 +743,13 @@ void playGameAutomatic (
                 else 
                 {
                     iteration++;
+                    int movement = rand() % (sizeof(movements) / sizeof(char));
+                    cellsMerge(movements[movement], numRows, numColumns, matrix, 
+                        POINTS, CELLS_OCCUPIED);
 
-                    if (winner) // TODO: CONNECT WINNER WITH KERNEL.
+                    if (seeding(difficulty, numRows, numColumns, matrix,
+                            CELLS_OCCUPIED))
                     {
-                        int movement = rand() %
-                                       (sizeof(movements) / sizeof(char));
-                        cellsMerge(movements[movement], numRows, numColumns, matrix,
-                                   POINTS, CELLS_OCCUPIED);
-                        seeding(difficulty, numRows, numColumns, matrix,
-                                CELLS_OCCUPIED);
                         displayGrid(numRows, numColumns, matrix, POINTS, LIVES,
                                     CELLS_OCCUPIED);
                     }
@@ -775,11 +771,7 @@ void playGameAutomatic (
             std::cout << "You have 0 lives. GAMEOVER." << std::endl;
             keepPlaying = false;
         }
-    }
-
-    // Reset the value of winner.
-    winner = true;
-    
+    }    
 }
 
 // MAIN METHOD OF THE GAME.
