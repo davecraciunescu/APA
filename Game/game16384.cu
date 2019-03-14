@@ -89,6 +89,8 @@ __global__ void computeMatrixUp(int  numRows,
       
                 (*POINTS) += matrix[i * numRows + col];
                 (*CELLS_OCCUPIED)--;
+
+                __syncthreads();
                 /*
                 if(columnLength[col] 
                    < 
@@ -130,6 +132,8 @@ __global__ void computeMatrixDown(int  numRows,
                 
                 (*POINTS) += matrix[i * numRows + col];
                 (*CELLS_OCCUPIED)--;
+                
+                __syncthreads();
                 /* 
                 if(columnLength[col] 
                    < 
@@ -171,6 +175,8 @@ __global__ void computeMatrixLeft(int  numRows,
                 
                 (*POINTS) += matrix[row * numRows + i];
                 (*CELLS_OCCUPIED)--;
+                
+                __syncthreads();
                 /*
                 if(columnLength[i] 
                    < 
@@ -212,6 +218,8 @@ __global__ void computeMatrixRight(int  numRows,
 
                 (*POINTS) += matrix[row * numRows + i];
                 (*CELLS_OCCUPIED)--;
+                
+                __syncthreads();
                 /*
                 if(columnLength[i] 
                    < 
@@ -402,7 +410,7 @@ __host__ void displayGrid(int rows, int columns, int* Matrix,
                           int* POINTS, int* LIVES, int* CELLS_OCCUPIED,
                           int* columnLength)
 {
-    system("clear");
+    // system("clear");
     
     std::cout << "                       "
               << "  _    ____     __       __    __ __      " 
@@ -569,6 +577,8 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
     int* seedsValues;
     // Number of seeds planted 
     int seedsPlanted = 0;
+    // Number of different seeds per level of difficulty
+    int differentValues;
     // Position from the matrix where the seed is going to be planted. 
     // Used auxiliary variable
     int position;
@@ -580,7 +590,8 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
     {
         case 1:
             seeds = 15;
-            seedsValues = (int*) calloc(3, sizeof(int));
+            differentValues = 3;
+            seedsValues = (int*) calloc(differentValues, sizeof(int));
             seedsValues[0] = 2;
             seedsValues[1] = 4;
             seedsValues[2] = 8;
@@ -588,7 +599,8 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
 
         case 2:
             seeds = 8;
-            seedsValues = (int*) calloc(2, sizeof(int));
+            differentValues = 2;
+            seedsValues = (int*) calloc(differentValues, sizeof(int));
             seedsValues[0] = 2;
             seedsValues[1] = 4;
             break;
@@ -608,9 +620,7 @@ __host__ bool seeding(int gameDifficulty, int rows, int columns, int* matrix,
             if(matrix[position] == 0)
             {
                 // Random seed value among the ones according to the difficulty
-                matrix[position] = seedsValues[rand() % 
-                                               (sizeof(seedsValues) 
-                                                / sizeof(int))];
+                matrix[position] = seedsValues[rand() % differentValues];
                 seedsPlanted++;
                 (*CELLS_OCCUPIED)++;     
             }
