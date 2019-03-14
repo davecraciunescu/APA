@@ -9,6 +9,7 @@
 #include <string>
 // C++ library for I/O 
 #include <iostream>
+#include <fstream>
 // Calloc, exit, free
 #include <stdlib.h>
 // Rand
@@ -67,7 +68,8 @@ void saveGame(
      int numColumns,        // Number of columns in the game.
      int numMaxThreads,     // Number of max threads to be run.
     int* columnLength,      // Length of bigger number in column.
-    bool automatic);        // Play game in automatic mode.
+    bool automatic,         // Play game in automatic mode.
+    int* matrix);           // matrix with values.
 
 void loadGame();
 
@@ -815,7 +817,8 @@ void playGame (
                     switch(input[0])
                     {
                         case 'g':
-                            // TODO SAVE GAME.
+                            saveGame(difficulty, numRows, numColumns,
+                            numMaxThreads, columnLength, automatic, matrix);
                         break;
 
                         case 'q':
@@ -872,10 +875,30 @@ void saveGame(
      int numColumns,        // Number of columns in the game.
      int numMaxThreads,     // Number of max threads to be run.
     int* columnLength,      // Length of bigger number in column.
-    bool automatic)         // Play game in automatic mode.
+    bool automatic,         // Play game in automatic mode.
+    int* matrix)            // Matrix with the values.
 {
-   std::string record;
-//   std::ofstream file;
+    // File exportation variables.
+    std::ofstream file;
+
+    // Parse boolean value.
+    std::string boolean = automatic ? "true":"false";
+   
+    file.open("save.txt");
+
+    file << std::to_string(difficulty)    << std::endl;
+    file << std::to_string(numRows)       << std::endl;
+    file << std::to_string(numColumns)    << std::endl;
+    file << std::to_string(numMaxThreads) << std::endl;
+    file << std::to_string(*columnLength) << std::endl;
+    file << boolean                       << std::endl;
+
+    for (int i=0; i < (numRows * numColumns); i++)
+    {
+        file << std::to_string(matrix[i]);
+    }
+    
+    file.close();
 }
 
 
@@ -1012,7 +1035,7 @@ int main(int argc, char** argv)
         columnLength = (int*) malloc(numColumns);
         std::fill_n(columnLength, numColumns, 1);
         
-        bool gameMode = (mode == 'a')?true:false;
+        bool gameMode = (mode == 'a');
 
         // EXECUTE GAME.
         playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
