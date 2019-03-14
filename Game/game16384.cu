@@ -60,7 +60,8 @@ void playGame(
      int numColumns,        // Number of columns.
      int numMaxThreads,     // Max number of threds.
     int* columnLength,      // Length of the column.
-    bool automatic);        // Automatic gamemode.
+    bool automatic,         // Automatic gamemode.
+    int* matrix);           // Matrix with values.
 
 void saveGame(
      int difficulty,        // Difficulty of the game.
@@ -432,13 +433,13 @@ __host__ std::string printHearts(int LIVES)
 }
 
 // Prints the game's grid, including buttons, lives and punctuation.
-__host__ void displayGrid(int rows, 
-                          int columns, 
-                          int* Matrix, 
-                          int* POINTS, 
-                          int* LIVES, 
-                          int* CELLS_OCCUPIED,
-                          int* columnLength)
+__host__ void displayGrid(int rows,             // Rows of the table.
+                          int columns,          // Columns of the table.
+                          int* Matrix,          // Matrix with values.
+                          int* POINTS,          // Earned points.
+                          int* LIVES,           // Remaining lives
+                          int* CELLS_OCCUPIED,  // Occupied cells.
+                          int* columnLength)    // Length of the columns.
 {
     system("clear");
    
@@ -749,7 +750,8 @@ void playGame (
     int  numColumns,    // Number of columns in game.
     int  numMaxThreads, // Number of max threads to be run.
     int* columnLength,  // Length of bigger number in column.
-    bool automatic)     // Play game in automatic mode.
+    bool automatic,     // Play game in automatic mode.
+    int* matrix)        // Matrix with values.
 {
     // Auxiliary input variable.
     std::string input;
@@ -759,7 +761,6 @@ void playGame (
     int  points = 0;    int* POINTS         = &points;
     int cellsOc = 0;    int* CELLS_OCCUPIED = &cellsOc;
 
-    int*      matrix = (int*) calloc(numRows * numColumns, sizeof(int));
     bool     playing = true;
     bool keepPlaying = true;
      int   iteration = 0;
@@ -903,7 +904,50 @@ void saveGame(
 
 
 // Retrieves a game from a saved status and reloads it into memory.
-void loadGame();
+void loadGame()
+{
+    int difficulty = 0, numRows = 0, numColumns = 0, numMaxThreads = 0;
+    int* columnLength = 0;
+    bool automatic;
+    FILE *file;
+    
+    // Open file to read.
+    file = fopen("save.txt", "r");
+
+    // Make sure it exists.
+    if (file != NULL)
+    {
+        fscanf(file, "%i \n", &difficulty);
+        fscanf(file, "%i \n", &numRows);
+        fscanf(file, "%i \n", &numColumns);
+        fscanf(file, "%i \n", &numMaxThreads);
+        fscanf(file, "%i \n", columnLength);
+    
+        // Boolean extraction.
+        int temp;
+        fscanf(file, "%d", &temp);
+        automatic = temp;
+    
+        // Write the matrix.
+        int* matrix = (int*) malloc(numRows * numColumns * sizeof(int));
+        for (int i=0; i < (numRows * numColumns); i++)
+        {
+            fscanf(file, "%i \n", &matrix[i]);
+        }
+
+        fclose(file);
+        // Use all the variables just fetched from file to restart the game. 
+            
+        // EXECUTE GAME.
+        playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
+                 automatic, matrix);
+    }
+    else
+    {
+        std::cout << "There is no file to load, try to start the application"
+                  << "without charging the game!" << std::endl;
+    }
+}
 
 // -----------------------------------------------------------------------------
 // -------------------------------- MAIN CODE ----------------------------------
@@ -921,7 +965,7 @@ int main(int argc, char** argv)
     // Used as auxiliary variable for any input in the system
     std::string input;
 
-    system("cls");
+    system("clear");
     std::cout << "Processing game settings" << std::endl;
 
     if(argc == 5)
@@ -1029,17 +1073,60 @@ int main(int argc, char** argv)
                       << "is " << recommendedCells << "." << std::endl;
             exit(0);
         }
-       
-        // Initialization of the array which stores the length of the numbers in
-        // each column
-        columnLength = (int*) malloc(numColumns);
-        std::fill_n(columnLength, numColumns, 1);
-        
+
         bool gameMode = (mode == 'a');
 
-        // EXECUTE GAME.
-        playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
-                 gameMode);
+        // Matrix in which all the operations are going to take
+        // place.
+        int* matrix = (int*) calloc(numRows * numColumns, sizeof(int));
+        
+        std::cout << "Do you wish to load an earlier game? (y/n)?" << std::endl;
+      
+        bool load = true;
+
+        while(load)
+        {
+            std::cin >> input;
+
+            if (input.length() == 1)
+            {
+                switch(input[0])
+                {
+                    case 'y':
+                        load = false;
+
+                        loadGame();
+                        break;
+
+                    case 'n':
+                        load = false;
+
+                        std::cout << "Then, the game will continuw with the "
+                                  << "specified settings!" << std::endl;
+
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+ 
+                        // Initialization of the array which stores the length of the numbers in
+                        // each column
+                        columnLength = (int*) malloc(numColumns);
+                        std::fill_n(columnLength, numColumns, 1);            
+
+                        // EXECUTE GAME.
+                        playGame(difficulty, numRows, numColumns, numMaxThreads, columnLength,
+                             gameMode, matrix);
+                        break;
+
+                    default:
+                        std::cout << "The response wasn't the expected!" << std::endl;
+                        break;
+                }
+            }
+            else
+            {
+                std::cout << "The response wasn't the expected!" << std::endl;
+            }
+        }
+
     }
 }
 
@@ -1128,11 +1215,19 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixUp<<<dimGrid, dimBlock>>>(numRows, numColumns, 
                                                    dev_matrix, dev_POINTS, 
                                                    dev_CELLSO, dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows,
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
@@ -1143,11 +1238,19 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixDown<<<dimGrid, dimBlock>>>(numRows, numColumns, 
                                                      dev_matrix, dev_POINTS, 
                                                      dev_CELLSO, dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
@@ -1158,11 +1261,19 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixLeft<<<dimGrid, dimBlock>>>(numRows, numColumns, dev_matrix, 
                                               dev_POINTS, dev_CELLSO,
                                               dev_colLen);
             check_CUDA_Error("Error merging cells!\n");
             
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
@@ -1173,9 +1284,17 @@ cudaError_t cellsMerge(
                                              numColumns);
             check_CUDA_Error("Error while gathering cells!\n");
 
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             computeMatrixRight<<<dimGrid, dimBlock>>>(numRows,numColumns, dev_matrix,
                                                dev_POINTS, dev_CELLSO,
                                                dev_colLen);
+            // Waits for kernel to finish
+            cudaDeviceSynchronize();
+            check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
             check_CUDA_Error("Error merging cells!\n");
             
             fillSpace<<<dimGrid, dimBlock>>>(dev_matrix, movement, numRows, 
@@ -1187,6 +1306,7 @@ cudaError_t cellsMerge(
     // Waits for kernel to finish
     cudaDeviceSynchronize();
     check_CUDA_Error("cudaDeviceSynchronize returned error!\n");
+
 
     // Memory Transfer: GPU -> CPU
     cudaMemcpy(matrix, dev_matrix, numRows * numColumns * sizeof(int),
