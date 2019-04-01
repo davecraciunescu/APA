@@ -83,15 +83,6 @@ cudaError_t cellsMerge(
     int* CELLS_OCCUPIED,    // Occupied cells.
     int* columnLength);     // Length of the columns.
 
-cudaError_t cellsMerge(
-    char movement,          // Direction of the movement.
-    int  numRows,           // Rows of the table.
-    int  numColumns,        // Columns of the table.
-    int* matrix,            // Matrix with values.
-    int* POINTS,            // Number of points.
-    int* CELLS_OCCUPIED,    // Occupied cells.
-    int* columnLength);     // Length of the columns.
-
 // -----------------------------------------------------------------------------
 // ------------------------------- KERNELS -------------------------------------
 // -----------------------------------------------------------------------------
