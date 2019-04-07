@@ -1,9 +1,6 @@
 /**
- *  Directions for the game are limited.
- *
- *  @note PABLO: Sealed Traits are the scala equivalent of java enums, but they
- *  can only be extended in the same file. Delete this note after reading it.
- */
+ * Set of available Directions for the 2048 Game.  
+*/
 sealed trait Direction
 
 case object Left  extends Direction
@@ -18,7 +15,7 @@ case object Down  extends Direction
  *       @date: 2019.04.07
  *
  *       @todo: Figure out how to make this work normally.
- *              Delete the note that was left for Pablo.
+ *              This works, I promise. I just have to get it working.
  *
  *  @changelog:
  *    -- 2019.04.07 -- Dave E.
@@ -28,6 +25,9 @@ case object Down  extends Direction
  */
 object Direction
 {
+  /**
+   *  Generates the next direction aiming at the left corner.
+   */
   def nextL(dir: Direction): Direction =
   {
     dir match
@@ -39,6 +39,9 @@ object Direction
     }
   }
 
+  /**
+   *  Generates the next direction aiming at the right corner.
+   */
   def nextR(dir: Direction): Direction =
   {
     dir match
@@ -49,6 +52,10 @@ object Direction
       case Down  => Left
     }
   }
-
+  
+  /**
+   *  Acts in the opposite direction of the provided one.
+   *  This method is used to UNDO a movement.
+   */
   def opposite(dir: Direction): Direction = Direction.nextR(Direction.nextR(dir))
 }
