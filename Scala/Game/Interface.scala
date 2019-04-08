@@ -87,9 +87,23 @@ object Interface
   }
   
   /**
-   *  Prints the number of lives on screen.
+   *  Prints the current number of lives on screen with the given format. 
    */ 
   def printLives(): Unit =
+  {
+    print("<3".red.bold)
+    print("<3".red.bold)
+    print("<3".red.bold)
+    print("<3".red.bold.blink)
+    print("<3".black.bold)
+    
+    println;
+  }
+
+  /**
+   *  Prints an individual heart-life on screen with the given format.
+   */
+  def printLivesAux(max: Int, lives: Int, current:Int): Unit =
   {
 
   }
@@ -97,13 +111,19 @@ object Interface
   /**
    *  Prints the movement keys.
    */ 
-  def printKeyBindings(): Unit =
+  def printControls(): Unit =
   {
+    println("Controls:".yellow.bold)       
+    println;
+    println("        ___          ".yellow.bold)               
+    println("       | W |         ".yellow.bold)         
+    println(" ___    ___    ___   ".yellow.bold)    
+    println("| A |  | S |  | D |  ".yellow.bold)
 
   }
 
   /**
-   *  Prints end-screen information and points.
+   *  Prints end-screen and points.
    */
   def printEndScreen(points: Int): Unit =
   {
@@ -123,5 +143,7 @@ object Interface
   {
     printWelcome();
     printEndScreen(3);
+    printControls();
+    printLives();
   }
 }

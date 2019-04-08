@@ -13,6 +13,7 @@ import scala.language.implicitConversions
  *      -- Add basic color support.
  *      -- Add background color support.
  *      -- Add support for special features.
+ *      -- Add support for invisible text.
  *
  *   @knownBugs:
  *          
