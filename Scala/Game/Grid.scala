@@ -12,9 +12,12 @@
  *    -- 2019.04.06 -- Dave E.
  *      -- Add empty initialization mechanism.
  *      -- Implement multiple size board visualization.
- *    -- 2019.05.07 -- Dave E.
+ *    -- 2019.04.07 -- Dave E.
  *      -- Implement random seeding.
  *      -- Implement difficulty-based seeding.
+ *
+ *  @knownBugs:
+ *      
  */
 object Grid
 {

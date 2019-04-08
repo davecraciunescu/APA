@@ -22,6 +22,8 @@ case object Down  extends Direction
  *      -- Define available directions.
  *      -- Create reversal mechanism.
  *      -- Implement "nearest corner" movement.
+ *  
+ *  @knownBugs:
  */
 object Direction
 {

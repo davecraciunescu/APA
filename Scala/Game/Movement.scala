@@ -12,6 +12,9 @@
  *      -- 2019.04.07 -- Dave E.
  *        -- Define movement and basic actions.
  *        -- Create tile-merging mechanism.
+ *
+ *    @knownBugs:
+ *          
  */ 
 class Movement[A](val extract: A => Int, val merge: (A, A) => A, val nullTile: A)
 {
