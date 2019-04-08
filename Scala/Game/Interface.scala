@@ -26,6 +26,7 @@ object Interface
   def printWelcome() 
   {
     println;
+    
     print("______/\\\\\\____________/\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\______/\\\\\\\\\\\\\\\\\\_______________/\\\\\\____                \n".yellow.bold.blink)
     print(" __/\\\\\\\\\\\\\\________/\\\\\\\\////____/\\\\\\///////\\\\\\___/\\\\\\///////\\\\\\___________/\\\\\\\\\\____                 \n".yellow.bold.blink)       
     print("  _\\/////\\\\\\_____/\\\\\\///________\\///______/\\\\\\___\\/\\\\\\_____\\/\\\\\\_________/\\\\\\/\\\\\\____                   \n".yellow.bold.blink)      
@@ -80,9 +81,9 @@ object Interface
    *    3   |   14x14    |      6 {2, 4, 8}      |    +5 {2, 4, 8}
    *    4   |   17x17    |      6 {2, 4, 8}      |    +6 {2, 4, 8}
    */ 
-  def piclDifficulty(): Int = 
+  def pickDifficulty(): Int = 
   {
-    
+    2 
   }
   
   /**
@@ -107,18 +108,18 @@ object Interface
   def printEndScreen(points: Int): Unit =
   {
     println;
-    print(" _____  ___ ___  ________   _____ _   _ ___________          \n".red.bold.blink)
-    print("|  __ \\/ _ \\|  \\/  |  ___| |  _  | | | |  ___| ___ \\     \n".red.bold.blink)
-    print("| |  \\/ /_\\ \\ .  . | |__   | | | | | | | |__ | |_/ /      \n".red.bold.blink)
-    print("| | __|  _  | |\\/| |  __|  | | | | | | |  __||    /         \n".red.bold.blink)
-    print("| |_\\ \\ | | | |  | | |___  \\ \\_/ | \\_/ / |___| |\\ \\   \n".red.bold.blink)
-    print(" \\____|_| |_|_|  |_|____/   \\___/ \\___/\\____/\\_| \\_|   \n".red.bold.blink)
+    print("\t\t _____  ___ ___  ________   _____ _   _ ___________          \n".red.bold.blink)
+    print("\t\t|  __ \\/ _ \\|  \\/  |  ___| |  _  | | | |  ___| ___ \\     \n".red.bold.blink)
+    print("\t\t| |  \\/ /_\\ \\ .  . | |__   | | | | | | | |__ | |_/ /      \n".red.bold.blink)
+    print("\t\t| | __|  _  | |\\/| |  __|  | | | | | | |  __||    /         \n".red.bold.blink)
+    print("\t\t| |_\\ \\ | | | |  | | |___  \\ \\_/ | \\_/ / |___| |\\ \\   \n".red.bold.blink)
+    print("\t\t \\____|_| |_|_|  |_|____/   \\___/ \\___/\\____/\\_| \\_|   \n".red.bold.blink)
     println;                                                                     
   }
 
   def main(args: Array[String]): Unit =
   {
-    welcome();
-    val test: Int = pickAction();
+    printWelcome();
+    printEndScreen(3);
   }
 }
