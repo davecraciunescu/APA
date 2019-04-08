@@ -115,7 +115,9 @@ object Interface
     print("\t\t| |_\\ \\ | | | |  | | |___  \\ \\_/ | \\_/ / |___| |\\ \\   \n".red.bold.blink)
     print("\t\t \\____|_| |_|_|  |_|____/   \\___/ \\___/\\____/\\_| \\_|   \n".red.bold.blink)
     println;                                                                     
-  }
+ 
+    println(f"\t\tTotal points:${points}".yellow.bold)
+ }
 
   def main(args: Array[String]): Unit =
   {
