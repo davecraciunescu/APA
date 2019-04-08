@@ -1,3 +1,5 @@
+import scala.language.implicitConversions
+
 /**
  *  String color coding mechanism.
  *
@@ -17,9 +19,6 @@
  */
 trait Color
 {
-  // Needed to make implicit def work.
-  import scala.language.implicitConversions
-  
   implicit def hasColor(s: String) = new ColorString(s)
 
   /**
