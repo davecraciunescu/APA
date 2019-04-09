@@ -1,5 +1,6 @@
 import Color._
 import scala.io.StdIn.{readLine, readInt}
+import scala.language.implicitConversions
 
 /**
  *  Graphical interface and I/O interaction with user.
@@ -7,19 +8,41 @@ import scala.io.StdIn.{readLine, readInt}
  *      @author: Dave E. Craciunescu. Pablo Acereda Garcia
  *        @date: 2019.04.08
  *
- *        @todo: Add game board format.
- *               Add difficulty system.
- *               Add user action choice.
+ *        @todo: 
  *
  *   @changelog:
  *    -- 2019.04.08 -- Dave E.
  *      -- Add welcome screen ASCII Art.
  *      -- Add color coding.
+ *    -- 2019.04.09 -- Dave E.
+ *      -- Add game board format.
+ *      -- Add difficulty system.
+ *      -- Add user action choice.
+ *      -- Add heart animation.
+ *      -- Add input menu validation.
  *
  *   @knownBugs:
  */
 object Interface
 { 
+  // Utilities and aux methods.
+  /////////////////////////////////////////////////////////////////////////////
+
+  /** Redefine String class to Accept numeric inference. */
+  class NumString(str: String) 
+  {
+    /** Analyze if input is valid. */
+    def isValid(low: Int, up: Int): Boolean =
+    {
+      ((!str.isBlank) && (str.matches("^\\d+$")) && (str.toInt >= low) && (str.toInt <= up))
+    }
+  }
+  
+  /** Implicit transformator of the String class. */
+  implicit def numString(string: String) = new NumString(string)
+  
+  /////////////////////////////////////////////////////////////////////////////
+
   /**
    *  Prints welcome screen.
    */
@@ -40,7 +63,7 @@ object Interface
     println;
     println("\t\t\tBY PABLO ACEREDA GARCIA & DAVID E. CRACIUNESCU".white.bold)
     println;
- }
+  }
 
   /**
    *  Prints option screen and returns chosen action.
@@ -61,14 +84,17 @@ object Interface
     println("[3] Quit game"         .cyan.bold)
     println;
  
-    scala.io.StdIn.readInt()
+    val action: String = scala.io.StdIn.readLine();
+
+    if (action.isValid(1, 3)) action.toInt
+    else pickAction
   }
 
   /**
    *  Exits the game.
    */ 
-  def exitGame(): Unit = {System.exit(0)}
-  
+  def exitGame(): Unit = {System.exit(0)} 
+
   /**
    *  Prints game difficulty description and asks user for choice.
    *  
@@ -82,30 +108,43 @@ object Interface
    *    4   |   17x17    |      6 {2, 4, 8}      |    +6 {2, 4, 8}
    */ 
   def pickDifficulty(): Int = 
-  {
-    2 
+  { 
+    println;
+    println("Choose a difficulty:".white.bold)
+    println("[1]. Easy            (4x4)".cyan.bold)
+    println("[2]. Moderate        (9x9)".green.bold)
+    println("[3]. Hard            (14x14)".yellow.bold)
+    println("[4]. Extremely Hard  (17x17)".red.bold)
+    println;
+    
+    val diff: String = scala.io.StdIn.readLine(); 
+    
+    if (diff.isValid(1, 4)) diff.toInt
+    else pickDifficulty
   }
-  
+
   /**
    *  Prints the current number of lives on screen with the given format. 
    */ 
-  def printLives(): Unit =
+  def printLives(max: Int, lives: Int): Unit =
   {
-    print("<3".red.bold)
-    print("<3".red.bold)
-    print("<3".red.bold)
-    print("<3".red.bold.blink)
-    print("<3".black.bold)
-    
-    println;
+    printLivesAux(max, lives, 0)
   }
 
   /**
    *  Prints an individual heart-life on screen with the given format.
    */
-  def printLivesAux(max: Int, lives: Int, current:Int): Unit =
+  def printLivesAux(max: Int, lives: Int, current: Int): Unit =
   {
+    if (current != max)
+    {
+      if      (current < lives)   print("<3".red.bold)
+      else if (current == lives)  print("<3".red.bold.blink)
+      else                        print("<3".black.bold)
 
+      printLivesAux(max, lives, current + 1)
+    }
+    else println;
   }
 
   /**
@@ -137,13 +176,5 @@ object Interface
     println;                                                                     
  
     println(f"\t\tTotal points:${points}".yellow.bold)
- }
-
-  def main(args: Array[String]): Unit =
-  {
-    printWelcome();
-    printEndScreen(3);
-    printControls();
-    printLives();
   }
 }
