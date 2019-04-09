@@ -31,6 +31,10 @@ object Interface
   /** Redefine String class to Accept numeric inference. */
   class NumString(str: String) 
   {
+    /** Analyze if text input is blank. */
+    def isBlankStr(str: Option[String]): Boolean = str.exists(_.trim.nonEmpty)
+    def isBlank(str: String): Boolean = isBlankStr(Option(str))
+
     /** Analyze if input is valid. */
     def isValid(low: Int, up: Int): Boolean =
     {
