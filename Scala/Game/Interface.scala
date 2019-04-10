@@ -19,9 +19,12 @@ import scala.language.implicitConversions
  *    -- 2019.04.10 -- Dave E.
  *      -- Add grid printing format.
  *      -- Add round printing hook.
+ *    -- 2019.04.11 -- Pablo A.
+ *      -- Solved knownBug fof string.isBlank 
  *
  *   @knownBugs:
  *    -- Color does not work in Windows terminal.
+ *   -- Solved 2019.04.11 -- Pablo A.
  *    -- string.isBlank does not execute in Windows envionments.
  */
 object Interface
@@ -32,7 +35,7 @@ object Interface
     /** Analyze if input is valid. */
     def isValid(low: Int, up: Int): Boolean =
     {
-      ((!str.isBlank) && (str.matches("^\\d+$")) && (str.toInt >= low) && (str.toInt <= up))
+      ((!str.isEmpty) && (str.matches("^\\d+$")) && (str.toInt >= low) && (str.toInt <= up))
     }
   }
   
