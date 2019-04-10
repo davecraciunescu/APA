@@ -1,3 +1,5 @@
+import scala.util.Random
+
 /**
  *  Represents the grid where the game will be played.
  *
@@ -23,11 +25,11 @@ object Grid
 {
 
   /**
-   *  Returns a new empty two-dimensional square grid array of size 'size'
+   *  Returns a new empty two-dimensional square grid list of size 'size'
    *  
-   *  @param size The size of the array.
+   *  @param size The size of the list.
   */ 
-  def init(size: Int): Array[Int] = Array.ofDim[Int](size * size)
+  def init(size: Int): List[Int] = List.fill(size*size)(0)
 
   /**
    *  Places a value in a List in the given position.
@@ -50,13 +52,13 @@ object Grid
   def getValue(pos: Int, grid: List[Int]): Int = grid(pos)
 
   /**
-   *  Returns if the List has at least num free elements.
+   *  Returns a list with the indexes of all free spots.
    */
-  def freeSpots(num: Int, grid: List[Int]): Int =
+  def getFreeSpots(grid: List[Int]): List[Int] = 
   {
-    grid.map(s l=> s + 1
+    grid.zipWithIndex.collect { case (0,i) => i } 
   }
-
+  
   /**
    *  Initializes the board with seeds depending on difficulty.
    *
@@ -68,20 +70,39 @@ object Grid
    *    3   |   14x14    |      6 {2, 4, 8}      |    +5 {2, 4, 8}
    *    4   |   17x17    |      6 {2, 4, 8}      |    +6 {2, 4, 8}
    *  
-   *  @param board: The array to be seeded.
+   *  @param board: The list to be seeded.
    *  @param level: The level of difficulty of the game.
    */
-  //def seed(board: Array[Int], level: Int)
-  //{
-         
-  //}
+  def seedBoard(board: List[Int], seeds: List[Int]): List[Int]
+  {
+    
+    // if list is null
+    // else
+    //  iterate over list
+    //    if current val == 0
+    //      if there are more spots
+    //        random generator decides
+    //      if there are exact spots
+    //        fill them all
+    //      else
+    //        can't seed
+    //    else
+  }
   
+  /**
+   *  Returns a list with a random selection from the provided values.
+   *
+   *  @param amount The size of the created list.
+   *  @param values The list of values to select from.
+   */
+  def genSeeds(amount: Int, values: List[Int]): List[Int] =
+  {
+    List.fill(amount)(values(scala.util.Random.nextInt(values.length)))
+  }
+
   def main (args: Array[String]): Unit =
   {
-    val test = (1 to 10).toList
-    val newOne = placeValue(3, 11, test)
-
-    print(getValue(1, test))
-    print(getValue(2, test))
+    val values = List(2, 4, 8)
+    genSeed(6, values).foreach(println)
   }
 }
