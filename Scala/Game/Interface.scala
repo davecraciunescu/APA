@@ -15,19 +15,17 @@ import scala.language.implicitConversions
  *      -- Add welcome screen ASCII Art.
  *      -- Add color coding.
  *    -- 2019.04.09 -- Dave E.
- *      -- Add game board format.
- *      -- Add difficulty system.
- *      -- Add user action choice.
- *      -- Add heart animation.
- *      -- Add input menu validation.
+ *      -- Add game menus and validation system.
+ *    -- 2019.04.10 -- Dave E.
+ *      -- Add grid printing format.
+ *      -- Add round printing hook.
  *
  *   @knownBugs:
+ *    -- Color does not work in Windows terminal.
+ *    -- string.isBlank does not execute in Windows envionments.
  */
 object Interface
 { 
-  // Utilities and aux methods.
-  /////////////////////////////////////////////////////////////////////////////
-
   /** Redefine String class to Accept numeric inference. */
   class NumString(str: String) 
   {
@@ -40,8 +38,6 @@ object Interface
   
   /** Implicit transformator of the String class. */
   implicit def numString(string: String) = new NumString(string)
-  
-  /////////////////////////////////////////////////////////////////////////////
 
   /**
    *  Prints welcome screen.
@@ -160,6 +156,33 @@ object Interface
     println("| A |  | S |  | D |  ".yellow.bold)
 
   }
+
+  /**
+   *  Prints a two-dimensional square board array on screen recursively.
+   *  This method triggers the printing for the whole board.
+   *
+   *  @param board The board to be printed on screen.
+   */ 
+  def printBoard(board: Array[Int]): Unit = printBoardAux(board, 0)
+
+  /**
+   *  Prints an element of a two-dimensional square board array on screen
+   *  recursively.
+   *
+   *  @param board The board to be printed on screen.
+   */
+  private def printBoardAux(board: Array[Int], pos: Int): Unit =
+  {
+    print("\t")
+    print(s"${board(pos)}".colorVal)
+    
+    if (pos == board.length - 1) println
+    else
+    {
+      if ((pos + 1) % math.sqrt(board.size) == 0) println
+      printBoardAux(board, pos + 1)
+    }
+  } 
 
   /**
    *  Prints end-screen and points.

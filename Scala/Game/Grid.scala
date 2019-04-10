@@ -12,9 +12,9 @@
  *    -- 2019.04.06 -- Dave E.
  *      -- Add empty initialization mechanism.
  *      -- Implement multiple size board visualization.
- *    -- 2019.04.07 -- Dave E.
- *      -- Implement random seeding.
- *      -- Implement difficulty-based seeding.
+ *    -- 2019.04.10 -- Dave E.
+ *      -- Migrate multiple size board visualization to Interface.
+ *      -- Implement random and difficulty-based seeding.
  *
  *  @knownBugs:
  *      
@@ -45,44 +45,5 @@ object Grid
   def seed(board: Array[Int], level: Int)
   {
          
-  }
-
-  /**
-   *  Prints a two-dimensional square board array on screen recursively.
-   *  This method triggers the printing for the whole board.
-   *
-   *  @param board The board to be printed on screen.
-   */
-  def printBoard(board: Array[Int]): Unit = printBoardAux(board, 0)
-
-  /**
-   *  Prints an element of a two-dimensional square board array on screen
-   *  recursively.
-   *
-   *  @param board The board to be printed on screen.
-   */ 
-  private def printBoardAux(board: Array[Int], pos: Int): Unit =
-  {
-    if (pos == board.length - 1) println(s"\t${board(pos)}")
-    else
-    {
-      if ((pos + 1) % math.sqrt(board.size) == 0) println(s"\t${board(pos)}")
-      else (print(s"\t${board(pos)}"))
-
-      printBoardAux(board, pos + 1)
-    }
-  }
-  
-  /**
-   *  Main test method to make sure the functioning is correct.
-   */
-  def main(args: Array[String]): Unit =
-  {
-    def testArray(size: Int): Array[Int] = (0 to size*size-1).toArray
-
-    val test = testArray(4)
-
-    printBoard(test)
-
   }
 }
