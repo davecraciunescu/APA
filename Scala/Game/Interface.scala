@@ -190,6 +190,7 @@ object Interface
   def printEndScreen(points: Int): Unit =
   {
     println;
+    
     print("\t\t _____  ___ ___  ________   _____ _   _ ___________          \n".red.bold.blink)
     print("\t\t|  __ \\/ _ \\|  \\/  |  ___| |  _  | | | |  ___| ___ \\     \n".red.bold.blink)
     print("\t\t| |  \\/ /_\\ \\ .  . | |__   | | | | | | | |__ | |_/ /      \n".red.bold.blink)
