@@ -140,57 +140,67 @@ object juego2048 {
         
   }
  
-/*def moverDer(tablero: List[Int], filas: Int, columnas: Int, posicion: Int):List[Int] ={
+def moverDer(tablero: List[Int], columnas: Int, posicion: Int):List[Int] ={
    
    if(tablero == Nil) return Nil
    else if((posicion+1) % columnas == 0){
-     return tablero.head :: moverDer(tablero.tail, filas, columnas, posicion+1)
+     
+     return tablero.head :: moverDer(tablero.tail, columnas, posicion+1)
+     
+   }
+   else if(tablero.head != 0 && tablero.tail.head == 0){
+     
+     val aux = tablero.head :: tablero.tail.tail
+     return 0 :: moverDer(aux, columnas, posicion+1)
+     
+   }
+   else if(tablero.head != 0 && tablero.tail.head == tablero.head){
+     
+     val sum = tablero.head * 2
+     val aux = sum :: tablero.tail.tail
+     return 0 :: moverDer(aux, columnas, posicion+1)
+   
+   }
+   else{
+     
+     val aux = moverDer(tablero.tail, columnas, posicion+1)
+     val tab2 = tablero.head::aux
+     if(tab2.head != 0 && tab2.tail.head == 0) return moverDer(tab2, columnas, posicion)
+     else return tab2
+     
+   }
+ }
+ 
+def moverIzq(tablero: List[Int], columnas: Int, posicion: Int):List[Int] ={
+    val aux = moverDer(tablero.reverse, columnas,0)
+    return aux.reverse
+}
+
+
+/* ANTIGUO MÉTODO PARA MOVER A LA DERECHA
+ * def moverDer2(tablero: List[Int],  columnas: Int, posicion: Int):List[Int] ={
+   
+   if(tablero == Nil) return Nil
+   else if((posicion+1) % columnas == 0){
+     return tablero.head :: moverDer2(tablero.tail, columnas, posicion+1)
    }
    else if(tablero.head != 0 && tablero.tail.head == 0){
      
      val aux = (tablero.head::tablero.tail.tail)
-     val tab2 = 0 :: moverDer(aux, filas, columnas, posicion+1)
-     return moverDer(tab2, filas, columnas, posicion)
+     val tab2 = 0 :: moverDer2(aux, columnas, posicion+1)
+     return moverDer2(tab2,  columnas, posicion)
      
    }
    else if(tablero.head != 0 && tablero.tail.head == tablero.head){
      
      val num = tablero.head * 2
-     val tab2 =  0 :: moverDer(num::tablero.tail.tail, filas, columnas, posicion+1)
-     return moverDer(tab2, filas, columnas, posicion)
+     val tab2 =  0 :: moverDer2(num::tablero.tail.tail, columnas, posicion+1)
+     return moverDer2(tab2, columnas, posicion)
    
    }
-   else return tablero.head :: moverDer(tablero.tail, filas, columnas, posicion+1)
+   else return tablero.head :: moverDer2(tablero.tail,columnas, posicion+1)
    
  }*/
- 
- def moverDer(tablero: List[Int], filas:Int,columnas:Int, posicion:Int):List[Int] = {
-   if (tablero==Nil) return Nil
-   else if((posicion+1) % columnas == 0){
-     return tablero.head :: moverDer(tablero.tail, filas, columnas, posicion+1)
-   }
-   else if( coger(posicion,tablero)!=0 && coger(posicion+1, tablero)== 0){
-      val aux = (tablero.head::tablero.tail.tail)
-      val tab2 = 0 :: moverDer(aux, filas, columnas, posicion+1)
-      return moverDer(tab2, filas, columnas, posicion)
-   }
-   else if(coger(posicion,tablero) != 0 && (coger(posicion+1,tablero) == coger(posicion,tablero))){
-     
-     val num = tablero.head * 2
-     val tab2 =  0 :: moverDer(num::tablero.tail.tail, filas, columnas, posicion+1)
-     return moverDer(tab2, filas, columnas, posicion)
-   
-   }
-   else if ( coger(posicion,tablero)!=0 && coger(posicion+1, tablero)!= 0){
-     return 0::moverDer(tablero, filas, columnas, posicion+2)
-   }
-   else if (coger (posicion, tablero)==0) return moverDer(tablero.tail, filas, columnas, posicion+1)
-    else return tablero.head :: moverDer(tablero.tail, filas, columnas, posicion+1)
- }
-def moverIzq(tablero: List[Int], filas: Int, columnas: Int, posicion: Int):List[Int] ={
-   
-    return moverDer(tablero.reverse, filas, columnas,0).reverse
-}
   
  def traspuesta (tablero:List[Int], columnas: Int, tam:Int, pos:Int):List[Int]={
    if (tablero == Nil)
@@ -209,8 +219,8 @@ def moverIzq(tablero: List[Int], filas: Int, columnas: Int, posicion: Int):List[
  
  def mover (movimiento:Int, tablero:List[Int], filas:Int, columnas:Int) = movimiento match {
    case 2 =>
-   case 4 => 000000..0.0.00000
-   case 6 => moverDer(tablero, filas, columnas,0)
+   case 4 => 
+   case 6 => moverDer(tablero, columnas,0)
    case 8 =>
    case _ =>
  }
@@ -218,7 +228,7 @@ def moverIzq(tablero: List[Int], filas: Int, columnas: Int, posicion: Int):List[
  //método principal del juego
   def jugar(tablero:List[Int], filas:Int, columnas:Int, dificultad:Int) = dificultad match{
     case 1 =>{
-      val tablerogen = List(2,4,8,0,2,4,8,0,2,4,8,0,2,4,8,0)
+      val tablerogen = List(0,2,0,2,4,4,2,2,0,2,0,4,2,0,4,0)
       
       //val tablerogen = generarSemillas(tablero, dificultad, Random.nextInt(filas*columnas))
       imprimir_tablero(filas,0,columnas,0, dificultad, tablerogen)
@@ -228,12 +238,12 @@ def moverIzq(tablero: List[Int], filas: Int, columnas: Int, posicion: Int):List[
         //Realizar movimiento + llamada recursiva a jugar
         //val movimiento = readInt()
         //mover(movimiento, tablero, filas, columnas)
-        println("Mover derecha")
-        imprimir_tablero(filas, 0, columnas, 0, dificultad, moverDer(tablerogen, filas, columnas, 0))
+       // println("Mover derecha")
+        //imprimir_tablero(filas, 0, columnas, 0, dificultad, moverDer(tablerogen, filas, 0))
         //mover(movimiento, tablero, filas, columnas)
         println ("Matriz izquierda")
-        val prueba= traspuesta(tablerogen, columnas, columnas*filas, 0)
-        imprimir_tablero(filas, 0, columnas, 0, dificultad, traspuesta(prueba, columnas, columnas*filas, 0))
+       // val prueba= traspuesta(tablerogen, columnas, columnas*filas, 0)
+        imprimir_tablero(filas, 0, columnas, 0, dificultad, moverIzq(tablerogen, columnas, 0))
         //val prueba = List(0,2,4,2)
         //println(prueba.tail.tail.head)
         //println(coger(4, tablero))
