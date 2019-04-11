@@ -161,25 +161,25 @@ object Interface
   }
 
   /**
-   *  Prints a two-dimensional square board array on screen recursively.
+   *  Prints a two-dimensional square board list on screen recursively.
    *  This method triggers the printing for the whole board.
    *
    *  @param board The board to be printed on screen.
    */ 
-  def printBoard(board: Array[Int]): Unit = printBoardAux(board, 0)
+  def printBoard(board: List[Int]): Unit = printBoardAux(board, 0)
 
   /**
-   *  Prints an element of a two-dimensional square board array on screen
+   *  Prints an element of a two-dimensional square board list on screen
    *  recursively.
    *
    *  @param board The board to be printed on screen.
    */
-  private def printBoardAux(board: Array[Int], pos: Int): Unit =
+  private def printBoardAux(board: List[Int], pos: Int): Unit =
   {
     print("\t")
     print(s"${board(pos)}".colorVal)
     
-    if (pos == board.length - 1) println
+    if (pos == board.size - 1) println
     else
     {
       if ((pos + 1) % math.sqrt(board.size) == 0) println

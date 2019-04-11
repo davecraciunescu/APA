@@ -12,7 +12,7 @@ import scala.language.implicitConversions
  *    -- 2019.04.08 -- Dave E.
  *      -- Add string color formatting support.
  *    -- 2019.04.10 -- Dave E.
- *      -- Define colors codes for 2048 Game. 
+ *      -- Define color codes for 2048 Game. 
  *      -- Add bright color support.
  *
  *   @knownBugs:

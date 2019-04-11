@@ -28,7 +28,7 @@ object Grid
    *  Returns a new empty two-dimensional square grid list of size 'size'
    *  
    *  @param size The size of the list.
-  */ 
+   */ 
   def init(size: Int): List[Int] = List.fill(size*size)(0)
 
   /**
@@ -56,7 +56,7 @@ object Grid
    */
   def getFreeSpots(grid: List[Int]): List[Int] = 
   {
-    grid.zipWithIndex.collect { case (0,i) => i } 
+    grid.zipWithIndex.collect { case (0, i) => i } 
   }
   
   /**
@@ -72,21 +72,19 @@ object Grid
    *  
    *  @param board: The list to be seeded.
    *  @param level: The level of difficulty of the game.
+   *
+   *  @return Seeded board.
    */
-  def seedBoard(board: List[Int], seeds: List[Int]): List[Int]
+  def seedBoard(board: List[Int], seeds: List[Int]): List[Int] =
   {
-    
-    // if list is null
-    // else
-    //  iterate over list
-    //    if current val == 0
-    //      if there are more spots
-    //        random generator decides
-    //      if there are exact spots
-    //        fill them all
-    //      else
-    //        can't seed
-    //    else
+    if (board.length == 0) Nil
+    else if (seeds.size == 0) board
+    else if (getFreeSpots(board).size < seeds.size) { init(board.length) }
+    else
+    {
+      placeValue(seeds(0), getFreeSpots(board)(scala.util.Random.nextInt(seeds.size)), board)
+      seedBoard(board, seeds.tail)
+    }
   }
   
   /**
@@ -102,7 +100,12 @@ object Grid
 
   def main (args: Array[String]): Unit =
   {
-    val values = List(2, 4, 8)
-    genSeed(6, values).foreach(println)
+    import Interface._
+
+    val board: List[Int] = init(4)
+    val values: List[Int] = List(2, 4)
+    val seeds: List[Int] = genSeeds(2, values)
+
+    Interface.printBoard(seedBoard(board, seeds))
   }
 }
