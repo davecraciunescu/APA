@@ -109,48 +109,46 @@ object Board
    *    3   |   14x14    |      6 {2, 4, 8}      |    +5 {2, 4, 8}
    *    4   |   17x17    |      6 {2, 4, 8}      |    +6 {2, 4, 8}
    *
-   *  @param diff   The difficulty chosen by the player.
    *  @param board  The board to seed with the values.
    *  
    *  @knownBugs: Init in empty board always 
    */
-  def seedBoard(diff: Int, board: List[Int]): List[Int] =
+  def seedBoard(board: List[Int]): List[Int] =
   {
-    if (isEmpty(board)) initSeed(diff, board)
-    else moveSeed(diff, board)
+    if (isEmpty(board)) initSeed(board)
+    else moveSeed(board)
   }
 
   /** 
    *  Returns a board with initial seeding according to difficulty.
    *  
-   *  @param diff  The difficulty.
    *  @param board The board to be seeded.
    */ 
-  private def initSeed(diff: Int, board: List[Int]): List[Int] =
+  private def initSeed(board: List[Int]): List[Int] =
   { 
-    diff match
+    // Pass the sizes of the boards instead the difficulty as parameter.
+    numElems(board) match
     {
-      case 1 => addSeeds(board, genSeeds(2, List(2)))
-      case 2 => addSeeds(board, genSeeds(4, List(2, 4)))
-      case 3 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
-      case 4 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
+      case 16  => addSeeds(board, genSeeds(2, List(2)))
+      case 81  => addSeeds(board, genSeeds(4, List(2, 4)))
+      case 196 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
+      case 289 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
     }
   }
 
   /** 
    *  Returns a board with movement seeding according to difficulty.
    *  
-   *  @param diff  The difficulty.
    *  @param board The board to be seeded.
    */ 
-  private def moveSeed(diff: Int, board: List[Int]): List[Int] =
+  private def moveSeed(board: List[Int]): List[Int] =
   {
-    diff match
+    numElems(board) match
     {
-      case 1 => addSeeds(board, genSeeds(1, List(2)))
-      case 2 => addSeeds(board, genSeeds(3, List(2, 4)))
-      case 3 => addSeeds(board, genSeeds(5, List(2, 4, 8)))
-      case 4 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
+      case 16  => addSeeds(board, genSeeds(1, List(2)))
+      case 81  => addSeeds(board, genSeeds(3, List(2, 4)))
+      case 196 => addSeeds(board, genSeeds(5, List(2, 4, 8)))
+      case 189 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
     }
   }
   

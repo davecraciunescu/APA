@@ -32,11 +32,16 @@ object Interface
   /** Redefine String class to Accept numeric inference. */
   class NumString(str: String) 
   {
-    /** Analyze if input is valid. */
-    def isValid(low: Int, up: Int): Boolean =
+    /** Analyze if input is valid number. */
+    def isValidNum(low: Int, up: Int): Boolean =
     {
       ((!str.isEmpty) && (str.matches("^\\d+$")) && (str.toInt >= low) && (str.toInt <= up))
     }
+
+    /** 
+     *  Analyze if input is a valid Move.
+     */
+    def isValidMove(): Boolean = str.matches("[wasdqWASDQ]")
   }
   
   /** Implicit transformator of the String class. */
@@ -83,7 +88,7 @@ object Interface
  
     val action: String = scala.io.StdIn.readLine();
 
-    if (action.isValid(1, 2)) action.toInt
+    if (action.isValidNum(1, 2)) action.toInt
     else pickAction
   }
 
@@ -121,8 +126,23 @@ object Interface
     
     val diff: String = scala.io.StdIn.readLine(); 
     
-    if (diff.isValid(1, 4)) diff.toInt
+    if (diff.isValidNum(1, 4)) diff.toInt
     else pickDifficulty
+  }
+
+  /**
+   *  Pick a move and check if it's valid.
+   */
+  def pickMove(): String =
+  {
+    val move: String = scala.io.StdIn.readLine();
+
+    if (move.isValidMove) move
+    else
+    {
+      println("Enter a correct move.")
+      pickMove()
+    }
   }
 
   /**
