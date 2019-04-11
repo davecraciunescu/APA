@@ -16,11 +16,12 @@ object Game
      * If the player decides to start the game, it is first needed to specify
      * the game difficulty. 
      */
-    val diff = Interface.pickAction match
-    {
-      case 1 => Interface.pickDifficulty;
-      case 2 => Interface.exitGame;
-    }
+
+    val action: Interface.pickAction
+
+    if (action == 1) playGame()
+    else Interface.exitGame
+
     // After being specified the difficulty, the game can finally start
     createGame(diff)
   }
@@ -28,9 +29,25 @@ object Game
   /**
    *  Creates the game according to the difficulty settings.
    */
-  def createGame(difficulty: Int)
+  def createGame(difficulty: Int): List[Int] =
   {
-    Interface.printBoard(Board.seedBoard(difficulty, Board.initBoard(4)))  
+    val size: Int = difficulty match
+    {
+      case 1 => 4 
+      case 2 => 9
+      case 3 => 14
+      case 3 => 17
+    }
+
+    Board.seedBoard(difficulty, Board.initBoard(size))
+  }
+
+  def playGame() =
+  {
+    val board = createGame(Interface.pickDifficulty)
+
+  
+
   }
 
   /**
