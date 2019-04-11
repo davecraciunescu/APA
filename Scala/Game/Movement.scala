@@ -25,11 +25,11 @@ object Movement
    *
    * @return Board having moved. 
    */
-   private def moveGen(board: List[Int], col: Int, pos: Int): List[Int] =
+   private def moveGen(board: List[Int], col: Int): List[Int] =
    {
-     val  m1 = moveRight(board, col, 0)
+     val  m1 = moveRight(board, col)
      val sum = merge(m1, col, 0)
-     val  m2 = moveRight(sum, col, 0)
+     val  m2 = moveRight(sum, col)
      m2
    }
  
@@ -39,14 +39,13 @@ object Movement
    *
    * @param board The List which holds the tiles.
    * @param col   Number of columns. 
-   * @param pos   Position to iterate whithin the board.
    *
    * @return Move the board to the right.
    */
-   private def moveRight (board: List[Int], col: Int, pos: Int): List[Int] = 
+   private def moveRight (board: List[Int], col: Int): List[Int] = 
    {
      if (board != Nil) 
-       moveRightAux(getN(col,board), col, pos):::moveRight(remove(col, board), col, pos);
+       moveRightAux(getN(col,board), col, 0):::moveRight(remove(col, board), col);
      else board
    }
   
@@ -64,13 +63,13 @@ object Movement
      if(board.tail == Nil) board
      else if((pos + 1 ) % col == 0)
      {
-       board.head :: moveRight (board.tail, col, pos + 1)
+       board.head :: moveRightAux (board.tail, col, pos + 1)
      }
      else if(board.head != 0 )
      {
        if(board.tail.head == 0)
        {
-         0 :: moveRightAux(board.head :: board.tail.tail, col, pos + 1)
+         0 :: moveRightAux (board.head :: board.tail.tail, col, pos + 1)
        }
        else
        {
@@ -128,12 +127,12 @@ object Movement
    *
    * @return Board moved to the left.
    */
-  def moveLeft(board: List[Int], col: Int, pos: Int): List[Int] =
+  def moveLeft(board: List[Int], col: Int): List[Int] =
   {
     // The method is actually the movement to the right of the reversed
     // matrix. 
     // The matrix again reversed to obtain the original matrix.
-    moveGen(board.reverse, col, 0).reverse
+    moveGen(board.reverse, col).reverse
   }
 
   /**
@@ -142,19 +141,18 @@ object Movement
    * @param board List which contains the tiles.
    * @param col   Number of columns.
    * @param size  Size of the board.
-   * @param pos   Position to iterate whithin the board.
    *
    * @return Board moved down.
    */
-  def moveDown(board: List[Int], col: Int, size: Int, pos: Int): List[Int] = 
+  def moveDown(board: List[Int], col: Int, size: Int): List[Int] = 
   {
     // It uses a transposed matrix to fill move the tiles.
     // After the final matrix is obtained, it is then again transposed to obtain
     // the original matrix.
-    val tras = trans(board, col, size, pos)
-    val mov  = moveRight(tras, col, pos)
+    val tras = trans(board, col, size, 0)
+    val mov  = moveRight(tras, col)
 
-    trans(moveGen(trans(board, col, size, pos), col, pos), col, size, pos)
+    trans(moveGen(trans(board, col, size, 0), col), col, size, 0)
   }
 
   /**
@@ -163,19 +161,18 @@ object Movement
    * @param board List which contains the tiles.
    * @param col   Number of columns.
    * @param size  Size of the board.
-   * @param pos   Position to iterate within the method.
    *
    * @return Board moved up.
    */
-  def moveUp(board: List[Int], col: Int, size: Int, pos: Int): List[Int] =
+  def moveUp(board: List[Int], col: Int, size: Int): List[Int] =
   {
     // It generates the transposed matrix and sends it to the left movement.
     // The transposed of the list obtained by that method is the original
     // matrix.
-    val tras = trans(board, col, size, pos)
-    val mov = moveLeft(tras, col, pos)
+    val tras = trans(board, col, size, 0)
+    val mov = moveLeft(tras, col)
    
-    trans(moveLeft(trans(board, col, size, pos), col, pos), col, size, pos)
+    trans(moveLeft(trans(board, col, size, 0), col), col, size, 0)
   }
 
   /**
@@ -246,10 +243,10 @@ object Movement
   {
     movement match
     {
-      case ("s"|"S") => moveDown(board, col, col * col, 0)
-      case ("a"|"A") => moveLeft(board, col,            0)
-      case ("d"|"D") =>  moveGen(board, col,            0)
-      case ("w"|"W") =>   moveUp(board, col, col * col, 0)
+      case ("s"|"S") => moveDown(board, col, col * col)
+      case ("a"|"A") => moveLeft(board, col)
+      case ("d"|"D") =>  moveGen(board, col)
+      case ("w"|"W") =>   moveUp(board, col, col * col)
     }
   }
 }
