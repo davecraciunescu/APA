@@ -183,36 +183,11 @@ object Movement
    */
   def moveUp(board: List[Int], col: Int): List[Int] =
   {
-    // It generates the transposed matrix and sends it to the left movement.
-    // The transposed of the list obtained by that method is the original
-    // matrix.
-    val tras = trans(board, col, size, 0)
-    val mov = moveLeft(tras, col)
-   
-    trans(moveLeft(trans(board, col, size, 0), col), col, size, 0)
+    // It generates the reverse matrix in order to move the tiles.
+    // The reverse of the list obtained by that method is the original matrix.
+    moveVer(board.reverse, col).reverse
   }
 
-  /**
-   * Creates the transposed of a given matrix.
-   *
-   * @param board List which contains the tiles.
-   * @param col   Number of columns.
-   * @param size  Size of the board.
-   * @param pos   Position to iterate within the method.
-   *
-   * @return The transpose of the matrix.
-   */
-  def trans (board: List[Int], col: Int, size: Int, pos: Int): List[Int] = 
-  {
-    if (board == Nil) board
-    else
-    {
-      if (size == col) Nil
-      else if (pos >= size) trans(board.tail, col, size - 1, 0)
-      else get(pos, board) :: trans(board, col, size, pos + col)
-    }
-  }
- 
   /**
    * Retrieves the first n elements from a list.
    *
