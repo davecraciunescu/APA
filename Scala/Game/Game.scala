@@ -57,13 +57,13 @@ object Game
         Interface.printBoard(board)
         printState(lives, Board.getPoints(board))
       
-        val move = Interface.pickMove
+        val gameMove = Interface.pickMove
 
-        if (move.matches("[Qq]")) println("Thanks for playing :)".green.bold)
+        if (gameMove.matches("[Qq]")) println("Thanks for playing :)".green.bold)
         else
         {
           val pts = Board.getPoints(board)
-          val newBoard = Movement.mover(move, board, math.sqrt(board.size).toInt)            
+          val newBoard = Movement.move(gameMove, board, math.sqrt(board.size).toInt)            
           val seeded   = Board.seedBoard(newBoard)
           
           playGame(lives, pts, diff, seeded)
