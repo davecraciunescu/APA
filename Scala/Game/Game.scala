@@ -5,6 +5,23 @@ import Movement._
 
 /**
  * Main code of the program
+ *
+ *    @author: Pablo Acereda García. Dave E. Craciunescu
+ *      @date: 2019.04.11
+ *
+ *      @todo:
+ *
+ * @changelog:
+ *  -- 2019.04.11 -- Pablo A.
+ *    -- Code structure.
+ *    -- Main definition.
+ *    -- Bug fixes.
+ *  -- 2019.04.11 -- Dave E.
+ *    -- Modularization and specification.
+ *
+ * @knownBugs:
+ *  -- Screen cleaner does not work properly on Windows.
+ *
  */
 object Game
 {
@@ -30,6 +47,9 @@ object Game
    */ 
   def playGame(lives: Int, points: Int, diff: Int, board: List[Int]): Unit =
   {
+    // Clears the screen
+    println("\033c")
+
     if (lives > 0)
     {
       if (!Board.isEmpty(board)) 

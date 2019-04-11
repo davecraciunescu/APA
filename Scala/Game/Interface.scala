@@ -24,7 +24,7 @@ import scala.language.implicitConversions
  *
  *   @knownBugs:
  *    -- Color does not work in Windows terminal.
- *   -- Solved 2019.04.11 -- Pablo A.
+ *      -- Solved 2019.04.11 -- Pablo A.
  *    -- string.isBlank does not execute in Windows envionments.
  */
 object Interface
