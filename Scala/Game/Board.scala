@@ -84,7 +84,7 @@ object Board
    */
   private def getFreeSpots(board: List[Int]): List[Int] = 
   {
-    board.zipWithIndex.collect { case (0, i) => i } 
+    Random.shuffle(board.zipWithIndex.collect { case (0, i) => i }) 
   } 
   
   /**
@@ -97,7 +97,6 @@ object Board
   {
     List.fill(amount)(values(scala.util.Random.nextInt(values.length)))
   }
-
 
   /**
    *  Function to separate Initial Seeding from movement seeding.
@@ -160,5 +159,33 @@ object Board
    *
    *  @param board The board itself.
    */ 
-  def getPoints(board: List[Int]): Int = board.sum
+  def getPoints(board: List[Int]): Int = sum(board)
+  
+  /**
+   *  Returns the number of elements in a list.
+   */ 
+  def numElems(l: List[Int]): Int = 
+  {
+    if(l == Nil) 0
+    else 1 + numElems(l.tail)
+  }
+ 
+  /**
+   *  Adds two elements together.
+   */
+  private def add(x: Int, y: Int): Int = 
+  {  
+    if(y == 0) x
+    else add(x, y - 1) + 1
+  }
+
+  /**
+   * Sums the values of a whole list.
+   */
+  def sum(x: List[Int]): Int =
+  {
+    if (numElems(x) == 0) 0
+    else add(x.head, sum(x.tail))
+  }
+
 }
