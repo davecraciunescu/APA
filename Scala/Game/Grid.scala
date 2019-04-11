@@ -1,66 +1,106 @@
 import scala.util.Random
 
 /**
- *  Represents the grid where the game will be played.
+ *  Represents the board where the game will be played.
  *
  *     @author: Dave E. Craciunescu. Pablo Acereda Garcia
  *       @date: 2019.04.06
  * 
- *       @todo: Add not-random initialization mechanism.
- *              Create movement visualization.
- *              Create color coding for values.
+ *       @todo: Create movement visualization.
  *
  *  @changelog:
  *    -- 2019.04.06 -- Dave E.
  *      -- Add empty initialization mechanism.
  *      -- Implement multiple size board visualization.
+ *    
  *    -- 2019.04.10 -- Dave E.
  *      -- Migrate multiple size board visualization to Interface.
  *      -- Implement random and difficulty-based seeding.
+ *    
+ *    -- 2019.04.11 -- Dave E.
+ *      -- Create color coding for values.
+ *      -- Add not-random initialization mechanism.
  *
  *  @knownBugs:
  *      
  */
-object Grid
+object Board
 {
-
   /**
-   *  Returns a new empty two-dimensional square grid list of size 'size'
+   *  Returns a new empty two-dimensional square board list of size 'size'
    *  
    *  @param size The size of the list.
    */ 
-  def init(size: Int): List[Int] = List.fill(size*size)(0)
+  def initBoard(size: Int): List[Int] = List.fill(size*size)(0)
 
+  /**
+   *  Returns if a list is initialized but not seeded.
+   */
+  def isEmpty(board: List[Int]): Boolean = (board.max > 0) 
+
+  /**
+   *  Returns the value of a List element in a given position.
+   */
+  private def getValue(pos: Int, board: List[Int]): Int = board(pos)
+  
   /**
    *  Places a value in a List in the given position.
    *  
    *  The method searches recursively for the given position and appends back to
    *  itself the methods that do not match with the position.
    *
-   *  @param grid The List to be placed in.
+   *  @param board The List to be placed in.
    */ 
-  def placeValue(num: Int, pos: Int, grid: List[Int]): List[Int] =
+  private def placeValue(num: Int, pos: Int, board: List[Int]): List[Int] =
   {
-    if (grid.length == 0) Nil
-    else if (pos == 0) num :: grid.tail
-    else grid.head :: placeValue(num, (pos - 1), grid.tail)
+    if      (board.length == 0) Nil
+    else if (pos == 0) num :: board.tail
+    else    board.head :: placeValue(num, (pos - 1), board.tail)
   }
 
   /**
-   *  Returns the value of a List element in a given position.
+   *  Seeds a board with the given values.
+   *  
+   *  @param board: The list to be seeded.
+   *  @param level: The level of difficulty of the game.
+   *
+   *  @return Reset board if can't seed.
    */
-  def getValue(pos: Int, grid: List[Int]): Int = grid(pos)
+  def addSeeds(board: List[Int], seeds: List[Int]): List[Int] =
+  {
+    if      (board.length == 0) Nil
+    else if (  seeds.size == 0) board
+    else if (getFreeSpots(board).size < seeds.size) { initBoard(board.length) }
+    else
+    {
+      val  rand:       Int = scala.util.Random.nextInt(seeds.size)
+      val added: List[Int] = placeValue(seeds(0), getFreeSpots(board)(rand), board)
+      addSeeds(added, seeds.tail)
+    }
+  }
 
   /**
    *  Returns a list with the indexes of all free spots.
    */
-  def getFreeSpots(grid: List[Int]): List[Int] = 
+  private def getFreeSpots(board: List[Int]): List[Int] = 
   {
-    grid.zipWithIndex.collect { case (0, i) => i } 
-  }
+    board.zipWithIndex.collect { case (0, i) => i } 
+  } 
   
   /**
-   *  Initializes the board with seeds depending on difficulty.
+   *  Returns a list with a random selection from the provided values.
+   *
+   *  @param amount The size of the created list.
+   *  @param values The list of values to select from.
+   */
+  private def genSeeds(amount: Int, values: List[Int]): List[Int] =
+  {
+    List.fill(amount)(values(scala.util.Random.nextInt(values.length)))
+  }
+
+
+  /**
+   *  Function to separate Initial Seeding from movement seeding.
    *
    *  The difficulty levels will generate the following seeds:
    *  Level | Size Board |  Initial Seeds {vals} |  Movement {vals}
@@ -69,43 +109,47 @@ object Grid
    *    2   |    9x9     |      4 {2, 4}         |    +3 {2, 4}
    *    3   |   14x14    |      6 {2, 4, 8}      |    +5 {2, 4, 8}
    *    4   |   17x17    |      6 {2, 4, 8}      |    +6 {2, 4, 8}
-   *  
-   *  @param board: The list to be seeded.
-   *  @param level: The level of difficulty of the game.
    *
-   *  @return Seeded board.
+   *  @param diff   The difficulty chosen by the player.
+   *  @param board  The board to seed with the values.
    */
-  def seedBoard(board: List[Int], seeds: List[Int]): List[Int] =
+  def seedBoard(diff: Int, board: List[Int]): List[Int] =
   {
-    if (board.length == 0) Nil
-    else if (seeds.size == 0) board
-    else if (getFreeSpots(board).size < seeds.size) { init(board.length) }
-    else
+    if (isEmpty(board)) initSeed(diff, board)
+    else moveSeed(diff, board)
+  }
+
+  /** 
+   *  Returns a board with initial seeding according to difficulty.
+   *  
+   *  @param diff  The difficulty.
+   *  @param board The board to be seeded.
+   */ 
+  private def initSeed(diff: Int, board: List[Int]): List[Int] =
+  { 
+    diff match
     {
-      placeValue(seeds(0), getFreeSpots(board)(scala.util.Random.nextInt(seeds.size)), board)
-      seedBoard(board, seeds.tail)
+      case 1 => addSeeds(board, genSeeds(2, List(2)))
+      case 2 => addSeeds(board, genSeeds(4, List(2, 4)))
+      case 3 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
+      case 4 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
     }
   }
-  
-  /**
-   *  Returns a list with a random selection from the provided values.
-   *
-   *  @param amount The size of the created list.
-   *  @param values The list of values to select from.
-   */
-  def genSeeds(amount: Int, values: List[Int]): List[Int] =
+
+  /** 
+   *  Returns a board with movement seeding according to difficulty.
+   *  
+   *  @param diff  The difficulty.
+   *  @param board The board to be seeded.
+   */ 
+  private def moveSeed(diff: Int, board: List[Int]): List[Int] =
   {
-    List.fill(amount)(values(scala.util.Random.nextInt(values.length)))
-  }
-
-  def main (args: Array[String]): Unit =
-  {
-    import Interface._
-
-    val board: List[Int] = init(4)
-    val values: List[Int] = List(2, 4)
-    val seeds: List[Int] = genSeeds(2, values)
-
-    Interface.printBoard(seedBoard(board, seeds))
-  }
+    diff match
+    {
+      case 1 => addSeeds(board, genSeeds(1, List(2)))
+      case 2 => addSeeds(board, genSeeds(3, List(2, 4)))
+      case 3 => addSeeds(board, genSeeds(5, List(2, 4, 8)))
+      case 4 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
+    }
+  } 
 }
