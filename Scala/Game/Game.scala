@@ -55,14 +55,10 @@ object Game
       val difficulty = pickDifficulty; 
       val      lives = 3
       val   theBoard = createBoard(difficulty) 
+
+      playGame(lives, difficulty, createBoard(difficulty))
     }  
     else Interface.exitGame
-
-    // TODO: Insert correct call
-    printState(3, 100)
-    
-    // After being specified the difficulty, the game can finally start
-    // createGame(difficulty)
   }
 
 
@@ -89,7 +85,7 @@ object Game
         }
       } 
       else 
-      {  
+      {
         printEndScreen(Board.getPoints(board))
 
         if (Interface.playAgain) playGame(lives - 1, diff, createBoard(diff))

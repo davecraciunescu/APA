@@ -36,7 +36,7 @@ object Board
   /**
    *  Returns if a list is initialized but not seeded.
    */
-  def isEmpty(board: List[Int]): Boolean = (board.max > 0) 
+  def isEmpty(board: List[Int]): Boolean = (board.max == 0) 
 
   /**
    *  Returns the value of a List element in a given position.
@@ -148,7 +148,7 @@ object Board
       case 16  => addSeeds(board, genSeeds(1, List(2)))
       case 81  => addSeeds(board, genSeeds(3, List(2, 4)))
       case 196 => addSeeds(board, genSeeds(5, List(2, 4, 8)))
-      case 189 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
+      case 289 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
     }
   }
   

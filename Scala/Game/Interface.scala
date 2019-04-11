@@ -216,7 +216,7 @@ object Interface
   private def printBoardAux(board: List[Int], pos: Int): Unit =
   {
     print("\t")
-    print(s"${board(pos)}".colorVal)
+    print(s"${board(pos)}")//.colorVal)
     
     if (pos == board.size - 1) println
     else
