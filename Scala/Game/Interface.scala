@@ -156,7 +156,7 @@ object Interface
    */
   def playAgain(): Boolean =
   {
-    val conf: String = scala.io.StdIn.readLine();
+    val conf: String = scala.io.StdIn.readLine("Play Again? [Y/N]".yellow.blink);
 
     if (conf.isValidConfirmation) ((conf == "y") || (conf == "Y"))
     else playAgain
@@ -225,7 +225,7 @@ object Interface
   private def printBoardAux(board: List[Int], pos: Int): Unit =
   {
     print("\t")
-    print(s"${board(pos)}")//.colorVal)
+    print(s"${board(pos)}".colorVal)
     
     if (pos == board.size - 1) println
     else

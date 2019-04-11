@@ -10,42 +10,6 @@ object Game
 {
   def main (args: Array[String])
   {
-    // Welcome screen.
-    // Ask for action.
-    //  - Play.
-    //    - Pick difficulty.
-    //    - Generate lives.
-    //
-    //    - Generate board.
-    //    - Seed board.
-    //    
-    //    - Play game.
-    //      - Check can play. 
-    //        - Yes 
-    //          - Print board on screen.
-    //          - Print info on screen.
-    //          - Ask for action.
-    //            - Check move.
-    //              - Move board.
-    //              - Join board.
-    //              - Seed board.
-    //            - Quit game.
-    //              - Quit.
-    //        - No
-    //          - Print end screen.
-    //          - Take life away.
-    //    - Want to play again.
-    //      - Yes
-    //        - Check can play
-    //          - Yes
-    //            - Play again
-    //          - No
-    //            - Can't play
-    //      - No
-    //        - Quit
-    //  - Quit
-    //
-
     // Title
     Interface.printWelcome;
 
@@ -55,9 +19,8 @@ object Game
     {
       val difficulty = pickDifficulty; 
       val      lives = 3
-      val   theBoard = createBoard(difficulty) 
-
-      playGame(lives, difficulty, createBoard(difficulty))
+      val     points = 0
+      playGame(lives, points, difficulty, createBoard(difficulty))
     }  
     else Interface.exitGame
   }
@@ -65,7 +28,7 @@ object Game
   /**
    *  Execute the game.
    */ 
-  def playGame(lives: Int, diff: Int, board: List[Int]): Unit =
+  def playGame(lives: Int, points: Int, diff: Int, board: List[Int]): Unit =
   {
     if (lives > 0)
     {
@@ -79,15 +42,19 @@ object Game
         if (move.matches("[Qq]")) println("Thanks for playing :)".green.bold)
         else
         {
-          val newBoard = Movements.moveVals(move, board, 4)            
-          playGame(lives, diff, newBoard)
+          val pts = Board.getPoints(board)
+          val newBoard = Movements.mover(move, board, math.sqrt(board.size).toInt)            
+          val seeded   = Board.seedBoard(newBoard)
+          
+          playGame(lives, pts, diff, seeded)
         }
       } 
       else 
       {
-        printEndScreen(Board.getPoints(board))
-
-        if (Interface.playAgain) playGame(lives - 1, diff, createBoard(diff))
+        printEndScreen(points)
+        println;
+  
+        if (Interface.playAgain) playGame(lives - 1, 0, diff, createBoard(diff))
         else println("Thanks for playing :)".green.bold)
       }
     }
@@ -95,6 +62,7 @@ object Game
     {  
       printEndScreen(Board.getPoints(board))
       println("No more lives left".red.bold.blink)
+      println;
     }
   }
 

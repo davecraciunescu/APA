@@ -1,4 +1,4 @@
-object movimientos
+object Movements
 {
   def moverGen(tablero: List[Int], columnas: Int, posicion: Int):List[Int] =
   {
@@ -115,13 +115,12 @@ def sumar(tablero: List[Int], columnas: Int, posicion: Int): List[Int] =
    else coger(n - 1, tablero.tail)
  }
  
- def mover (movimiento: Int, tablero: List[Int], columnas: Int, dificultad: Int) = 
+ def mover (movimiento: String, tablero: List[Int], columnas: Int): List[Int] = 
    movimiento match 
    {
-     case 2 => moverAbajo(tablero, columnas, columnas * columnas, 0)
-     case 4 => moverIzq(tablero, columnas, 0)
-     case 6 => moverGen(tablero, columnas, 0)
-     case 8 => moverArriba(tablero, columnas, columnas * columnas, 0)
-     case _ => println ("Movimiento no válido")
+     case ("s"|"S") => moverAbajo(tablero, columnas, columnas * columnas, 0)
+     case ("a"|"A") => moverIzq(tablero, columnas, 0)
+     case ("d"|"D") => moverGen(tablero, columnas, 0)
+     case ("w"|"W") => moverArriba(tablero, columnas, columnas * columnas, 0)
    }
  }
