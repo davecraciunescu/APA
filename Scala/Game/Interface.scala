@@ -199,8 +199,8 @@ object Interface
     println;
     println("\t        ___          ".yellow.bold)               
     println("\t       | W |         ".yellow.bold)         
-    println("\t ___    ___    ___   ".yellow.bold)    
-    println("\t| A |  | S |  | D |  ".yellow.bold)
+    println("\t ___    ___    ___       ___ ".yellow.bold)    
+    println("\t| A |  | S |  | D |     | Q |".yellow.bold)
 
   }
 
