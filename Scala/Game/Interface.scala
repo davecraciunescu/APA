@@ -69,8 +69,7 @@ object Interface
    *  
    *  Return code:
    *  [1] Play game.
-   *  [2] Change difficulty.
-   *  [3] Quit game.
+   *  [2] Quit game.
    *
    *  @return The code of the action.
    */
@@ -79,13 +78,12 @@ object Interface
     println;
     println("Choose an action:"     .yellow.bold)
     println("[1] Play"              .cyan.bold)
-    println("[2] Change difficulty" .cyan.bold)
-    println("[3] Quit game"         .cyan.bold)
+    println("[2] Quit game"         .cyan.bold)
     println;
  
     val action: String = scala.io.StdIn.readLine();
 
-    if (action.isValid(1, 3)) action.toInt
+    if (action.isValid(1, 2)) action.toInt
     else pickAction
   }
 

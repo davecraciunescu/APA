@@ -8,9 +8,21 @@ object Game
 {
   def main (args: Array[String])
   {
-    printState(2, 200)
-
-    createGame(2)
+    // Title
+    Interface.printWelcome;
+    /*
+     * Start or exists the code
+     * 
+     * If the player decides to start the game, it is first needed to specify
+     * the game difficulty. 
+     */
+    val diff = Interface.pickAction match
+    {
+      case 1 => Interface.pickDifficulty;
+      case 2 => Interface.exitGame;
+    }
+    // After being specified the difficulty, the game can finally start
+    createGame(diff)
   }
 
   /**
