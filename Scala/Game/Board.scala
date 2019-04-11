@@ -86,7 +86,7 @@ object Board
   {
     Random.shuffle(board.zipWithIndex.collect { case (0, i) => i }) 
   } 
-  
+
   /**
    *  Returns a list with a random selection from the provided values.
    *
