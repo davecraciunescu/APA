@@ -183,11 +183,12 @@ object Movement
    */
   def moveUp(board: List[Int], col: Int): List[Int] =
   {
-    // It generates the reverse matrix in order to move the tiles.
-    // The reverse of the list obtained by that method is the original matrix.
+    // The method is actually the movement to the right of the reversed
+    // matrix. 
+    // The matrix again reversed to obtain the original matrix.
     moveVer(board.reverse, col).reverse
   }
-
+  
   /**
    * Retrieves the first n elements from a list.
    *
@@ -254,10 +255,10 @@ object Movement
   {
     movement match
     {
-      case ("s"|"S") => moveVer(board, col)
+      case ("s"|"S") =>  moveVer(board, col)
       case ("a"|"A") => moveLeft(board, col)
       case ("d"|"D") =>  moveHor(board, col)
-      case ("w"|"W") =>   moveUp(board, col, col * col)
+      case ("w"|"W") =>   moveUp(board, col)
     }
   }
 }
