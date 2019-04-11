@@ -1,6 +1,7 @@
 import Interface._
 import Board._
 import Color._
+import Movements._
 
 /**
  * Main code of the program
@@ -78,10 +79,8 @@ object Game
         if (move.matches("[Qq]")) println("Thanks for playing :)".green.bold)
         else
         {
-
-          // Invoke board value movement.
-          // Join values in board.
-          // playGame(lives, diff, newBoard)
+          val newBoard = Movements.moveVals(move, board, 4)            
+          playGame(lives, diff, newBoard)
         }
       } 
       else 
