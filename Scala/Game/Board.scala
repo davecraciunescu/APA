@@ -66,7 +66,7 @@ object Board
    *
    *  @return Reset board if can't seed.
    */
-  def addSeeds(board: List[Int], seeds: List[Int]): List[Int] =
+  private def addSeeds(board: List[Int], seeds: List[Int]): List[Int] =
   {
     if      (board.length == 0) Nil
     else if (  seeds.size == 0) board
@@ -112,6 +112,8 @@ object Board
    *
    *  @param diff   The difficulty chosen by the player.
    *  @param board  The board to seed with the values.
+   *  
+   *  @knownBugs: Init in empty board always 
    */
   def seedBoard(diff: Int, board: List[Int]): List[Int] =
   {
@@ -151,5 +153,12 @@ object Board
       case 3 => addSeeds(board, genSeeds(5, List(2, 4, 8)))
       case 4 => addSeeds(board, genSeeds(6, List(2, 4, 8)))
     }
-  } 
+  }
+  
+  /**
+   *  Returns the points of the game. This will amount to the sum of the elems.
+   *
+   *  @param board The board itself.
+   */ 
+  def getPoints(board: List[Int]): Int = board.sum
 }

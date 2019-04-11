@@ -95,6 +95,11 @@ object Interface
   def exitGame(): Unit = {System.exit(0)} 
 
   /**
+   *  Prints the current amount of points on screen.
+   */
+  def printPoints(points: Int): Unit = println(f"Points: ${points}".red.bold)
+
+  /**
    *  Prints game difficulty description and asks user for choice.
    *  
    *  The difficulty levels are the following:
@@ -132,6 +137,11 @@ object Interface
 
   /**
    *  Prints an individual heart-life on screen with the given format.
+   *  
+   *  @knownBugs: Heart does not blink when max == current
+   *            : Will print blinking heart one position above.
+   *                Example max = 3, lives = 2 makes the third heart blink.
+   *                as if max = 3, lives = 3
    */
   def printLivesAux(max: Int, lives: Int, current: Int): Unit =
   {
@@ -151,12 +161,11 @@ object Interface
    */ 
   def printControls(): Unit =
   {
-    println("Controls:".yellow.bold)       
     println;
-    println("        ___          ".yellow.bold)               
-    println("       | W |         ".yellow.bold)         
-    println(" ___    ___    ___   ".yellow.bold)    
-    println("| A |  | S |  | D |  ".yellow.bold)
+    println("\t        ___          ".yellow.bold)               
+    println("\t       | W |         ".yellow.bold)         
+    println("\t ___    ___    ___   ".yellow.bold)    
+    println("\t| A |  | S |  | D |  ".yellow.bold)
 
   }
 
