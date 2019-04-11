@@ -61,7 +61,6 @@ object Game
     else Interface.exitGame
   }
 
-
   /**
    *  Execute the game.
    */ 
@@ -79,6 +78,7 @@ object Game
         if (move.matches("[Qq]")) println("Thanks for playing :)".green.bold)
         else
         {
+
           // Invoke board value movement.
           // Join values in board.
           // playGame(lives, diff, newBoard)

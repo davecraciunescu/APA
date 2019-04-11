@@ -96,7 +96,12 @@ object Interface
   /**
    *  Exits the game.
    */ 
-  def exitGame(): Unit = {System.exit(0)} 
+  def exitGame(): Unit = 
+  {
+    println("Thanks for playing!".yellow.bold)
+    println;
+    System.exit(0)
+  } 
 
   /**
    *  Prints the current amount of points on screen.
@@ -205,7 +210,11 @@ object Interface
    *
    *  @param board The board to be printed on screen.
    */ 
-  def printBoard(board: List[Int]): Unit = printBoardAux(board, 0)
+  def printBoard(board: List[Int]): Unit = 
+  {
+    println;
+    printBoardAux(board, 0)
+  }
 
   /**
    *  Prints an element of a two-dimensional square board list on screen
@@ -240,7 +249,7 @@ object Interface
     print("\t\t| |_\\ \\ | | | |  | | |___  \\ \\_/ | \\_/ / |___| |\\ \\   \n".red.bold.blink)
     print("\t\t \\____|_| |_|_|  |_|____/   \\___/ \\___/\\____/\\_| \\_|   \n".red.bold.blink)
     println;                                                                     
- 
+
     println(f"\t\tTotal points:${points}".yellow.bold)
   }
 }
