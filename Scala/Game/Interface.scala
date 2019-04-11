@@ -15,33 +15,38 @@ import scala.language.implicitConversions
  *      -- Add welcome screen ASCII Art.
  *      -- Add color coding.
  *    -- 2019.04.09 -- Dave E.
- *      -- Add game board format.
- *      -- Add difficulty system.
- *      -- Add user action choice.
- *      -- Add heart animation.
- *      -- Add input menu validation.
+ *      -- Add game menus and validation system.
+ *    -- 2019.04.10 -- Dave E.
+ *      -- Add grid printing format.
+ *      -- Add round printing hook.
+ *    -- 2019.04.11 -- Pablo A.
+ *      -- Solved knownBug fof string.isBlank 
  *
  *   @knownBugs:
+ *    -- Color does not work in Windows terminal.
+ *   -- Solved 2019.04.11 -- Pablo A.
+ *    -- string.isBlank does not execute in Windows envionments.
  */
 object Interface
 { 
-  // Utilities and aux methods.
-  /////////////////////////////////////////////////////////////////////////////
-
   /** Redefine String class to Accept numeric inference. */
   class NumString(str: String) 
   {
-    /** Analyze if input is valid. */
-    def isValid(low: Int, up: Int): Boolean =
+    /** Analyze if input is valid number. */
+    def isValidNum(low: Int, up: Int): Boolean =
     {
-      ((!str.isBlank) && (str.matches("^\\d+$")) && (str.toInt >= low) && (str.toInt <= up))
+      ((!str.isEmpty) && (str.matches("^\\d+$")) && (str.toInt >= low) && (str.toInt <= up))
     }
+
+    /** Analyze if input is a valid Move. */
+    def isValidMove(): Boolean = str.matches("[wasdqWASDQ]")
+ 
+    /** Analyze if input is a valid confirmation value. */
+    def isValidConfirmation(): Boolean = str.matches("[ynYN]")
   }
   
   /** Implicit transformator of the String class. */
   implicit def numString(string: String) = new NumString(string)
-  
-  /////////////////////////////////////////////////////////////////////////////
 
   /**
    *  Prints welcome screen.
@@ -70,8 +75,7 @@ object Interface
    *  
    *  Return code:
    *  [1] Play game.
-   *  [2] Change difficulty.
-   *  [3] Quit game.
+   *  [2] Quit game.
    *
    *  @return The code of the action.
    */
@@ -80,13 +84,12 @@ object Interface
     println;
     println("Choose an action:"     .yellow.bold)
     println("[1] Play"              .cyan.bold)
-    println("[2] Change difficulty" .cyan.bold)
-    println("[3] Quit game"         .cyan.bold)
+    println("[2] Quit game"         .cyan.bold)
     println;
  
     val action: String = scala.io.StdIn.readLine();
 
-    if (action.isValid(1, 3)) action.toInt
+    if (action.isValidNum(1, 2)) action.toInt
     else pickAction
   }
 
@@ -94,6 +97,11 @@ object Interface
    *  Exits the game.
    */ 
   def exitGame(): Unit = {System.exit(0)} 
+
+  /**
+   *  Prints the current amount of points on screen.
+   */
+  def printPoints(points: Int): Unit = println(f"Points: ${points}".red.bold)
 
   /**
    *  Prints game difficulty description and asks user for choice.
@@ -119,8 +127,34 @@ object Interface
     
     val diff: String = scala.io.StdIn.readLine(); 
     
-    if (diff.isValid(1, 4)) diff.toInt
+    if (diff.isValidNum(1, 4)) diff.toInt
     else pickDifficulty
+  }
+
+  /**
+   *  Returns a valid move from the user. {wasdWASD}
+   */
+  def pickMove(): String =
+  {
+    val move: String = scala.io.StdIn.readLine();
+
+    if (move.isValidMove) move
+    else
+    {
+      println("Enter a correct move.")
+      pickMove
+    }
+  }
+
+  /**
+   *  Returns true if the user wants to play again.
+   */
+  def playAgain(): Boolean =
+  {
+    val conf: String = scala.io.StdIn.readLine();
+
+    if (conf.isValidConfirmation) ((conf == "y") || (conf == "Y"))
+    else playAgain
   }
 
   /**
@@ -133,6 +167,11 @@ object Interface
 
   /**
    *  Prints an individual heart-life on screen with the given format.
+   *  
+   *  @knownBugs: Heart does not blink when max == current
+   *            : Will print blinking heart one position above.
+   *                Example max = 3, lives = 2 makes the third heart blink.
+   *                as if max = 3, lives = 3
    */
   def printLivesAux(max: Int, lives: Int, current: Int): Unit =
   {
@@ -152,14 +191,40 @@ object Interface
    */ 
   def printControls(): Unit =
   {
-    println("Controls:".yellow.bold)       
     println;
-    println("        ___          ".yellow.bold)               
-    println("       | W |         ".yellow.bold)         
-    println(" ___    ___    ___   ".yellow.bold)    
-    println("| A |  | S |  | D |  ".yellow.bold)
+    println("\t        ___          ".yellow.bold)               
+    println("\t       | W |         ".yellow.bold)         
+    println("\t ___    ___    ___   ".yellow.bold)    
+    println("\t| A |  | S |  | D |  ".yellow.bold)
 
   }
+
+  /**
+   *  Prints a two-dimensional square board list on screen recursively.
+   *  This method triggers the printing for the whole board.
+   *
+   *  @param board The board to be printed on screen.
+   */ 
+  def printBoard(board: List[Int]): Unit = printBoardAux(board, 0)
+
+  /**
+   *  Prints an element of a two-dimensional square board list on screen
+   *  recursively.
+   *
+   *  @param board The board to be printed on screen.
+   */
+  private def printBoardAux(board: List[Int], pos: Int): Unit =
+  {
+    print("\t")
+    print(s"${board(pos)}")//.colorVal)
+    
+    if (pos == board.size - 1) println
+    else
+    {
+      if ((pos + 1) % math.sqrt(board.size) == 0) println
+      printBoardAux(board, pos + 1)
+    }
+  } 
 
   /**
    *  Prints end-screen and points.
@@ -167,6 +232,7 @@ object Interface
   def printEndScreen(points: Int): Unit =
   {
     println;
+    
     print("\t\t _____  ___ ___  ________   _____ _   _ ___________          \n".red.bold.blink)
     print("\t\t|  __ \\/ _ \\|  \\/  |  ___| |  _  | | | |  ___| ___ \\     \n".red.bold.blink)
     print("\t\t| |  \\/ /_\\ \\ .  . | |__   | | | | | | | |__ | |_/ /      \n".red.bold.blink)
