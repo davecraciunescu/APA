@@ -25,14 +25,31 @@ object Movement
    *
    * @return Board having moved. 
    */
-   private def moveGen(board: List[Int], col: Int): List[Int] =
-   {
-     val  m1 = moveRight(board, col)
-     val sum = merge(m1, col, 0)
-     val  m2 = moveRight(sum, col)
-     m2
-   }
- 
+  private def moveHor(board: List[Int], col: Int): List[Int] =
+  {
+    val  m1 = moveRight(board, col)
+    val sum = merge(m1, col, 0)
+    val  m2 = moveRight(sum, col)
+    m2
+  }
+
+  /**
+   * Movement structure is generalized to a single method. All the movements are
+   * based on the right movement.
+   *
+   * @param board List which contains the tiles.
+   * @param col   Number of columns.
+   *
+   * @return Board having moved. 
+   */
+  private def moveVer(board: List[Int], col: Int): List[Int] =
+  {
+    val  m1 = moveDown(board, col)
+    val sum = merge(m1, col, 0)
+    val  m2 = moveDown(sum, col)
+    m2
+  }
+
   /**
    * Returns the tiles of a list moved to the right. 
    * Tiles with a 0 count as empty.
@@ -42,12 +59,12 @@ object Movement
    *
    * @return Move the board to the right.
    */
-   private def moveRight (board: List[Int], col: Int): List[Int] = 
-   {
-     if (board != Nil) 
-       moveRightAux(getN(col,board), col, 0):::moveRight(remove(col, board), col);
-     else board
-   }
+  private def moveRight (board: List[Int], col: Int): List[Int] = 
+  {
+    if (board != Nil) 
+      moveRightAux(getN(col,board), col, 0):::moveRight(remove(col, board), col);
+    else board
+  }
   
   /**
    * Iterates through the list and moves the tiles to the right.
@@ -58,7 +75,7 @@ object Movement
    *
    * @return Element moved to the right.
    */
-   private def moveRightAux(board: List[Int], col: Int, pos: Int): List[Int] =
+  private def moveRightAux(board: List[Int], col: Int, pos: Int): List[Int] =
    {
      if(board.tail == Nil) board
      else if((pos + 1 ) % col == 0)
@@ -132,7 +149,7 @@ object Movement
     // The method is actually the movement to the right of the reversed
     // matrix. 
     // The matrix again reversed to obtain the original matrix.
-    moveGen(board.reverse, col).reverse
+    moveHor(board.reverse, col).reverse
   }
 
   /**
@@ -161,11 +178,10 @@ object Movement
    *
    * @param board List which contains the tiles.
    * @param col   Number of columns.
-   * @param size  Size of the board.
    *
    * @return Board moved up.
    */
-  def moveUp(board: List[Int], col: Int, size: Int): List[Int] =
+  def moveUp(board: List[Int], col: Int): List[Int] =
   {
     // It generates the transposed matrix and sends it to the left movement.
     // The transposed of the list obtained by that method is the original
@@ -252,7 +268,7 @@ object Movement
   def place(num: Int, pos: Int, board: List[Int]): List[Int] =
   {
     if      (board.length == 0) Nil
-    else if (pos == 0) num :: board.tail
+    else if (pos == 1) num :: board.tail
     else    board.head :: place(num, (pos - 1), board.tail)
   }
 
@@ -263,9 +279,9 @@ object Movement
   {
     movement match
     {
-      case ("s"|"S") => moveDown(board, col)
+      case ("s"|"S") => moveVer(board, col)
       case ("a"|"A") => moveLeft(board, col)
-      case ("d"|"D") =>  moveGen(board, col)
+      case ("d"|"D") =>  moveHor(board, col)
       case ("w"|"W") =>   moveUp(board, col, col * col)
     }
   }
