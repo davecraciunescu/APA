@@ -47,7 +47,7 @@ object Board
    *  Places a value in a List in the given position.
    *  
    *  The method searches recursively for the given position and appends back to
-   *  itself the methods that do not match with the position.
+   *  itself the values that do not match with the position.
    *
    *  @param board The List to be placed in.
    */ 

@@ -141,20 +141,20 @@ object Movement
    *
    * @param board List which contains the tiles.
    * @param col   Number of columns.
-   * @param size  Size of the board.
-   * @param pos   Position to iterate whithin the board.
    *
    * @return Board moved down.
    */
-  def moveDown(board: List[Int], col: Int, size: Int, pos: Int): List[Int] = 
+  def moveDown(board: List[Int], col: Int): List[Int] = 
   {
-    // It uses a transposed matrix to fill move the tiles.
-    // After the final matrix is obtained, it is then again transposed to obtain
-    // the original matrix.
-    val tras = trans(board, col, size, pos)
-    val mov  = moveRight(tras, col, pos)
-
-    trans(moveGen(trans(board, col, size, pos), col, pos), col, size, pos)
+    if (board.isEmpty) Nil
+    else if (board.head > 0 && col < board.length && get(col, board) == 0)
+    {
+      val list = place(board.head, col+1, board)
+      0 :: moveDown(list.tail, col)
+    } else
+    {
+      board.head :: moveDown(board.tail, col)
+    }
   }
 
   /**
@@ -228,13 +228,13 @@ object Movement
     else remove(n - 1, l.tail)
   }
  
-  /**
-   * Retrieves the specified element.
+  /** 
+   *  Retrieves the specified element.
    *
-   * @param n     Position.
-   * @param board List which contains the tiles.
+   *  @param n     Position.
+   *  @param board List which contains the tiles.
    *
-   * @return Element n.
+   *  @return Element n.
    */
   def get(n: Int, board: List[Int]): Int=
   {
@@ -242,11 +242,30 @@ object Movement
     else get(n - 1, board.tail)
   }
  
-  def move (movement: String, board: List[Int], col: Int): List[Int] =
+ 
+  /**
+   *  Places a value in a List in the given position.
+   *
+   *  The method searches recursively for the given position and appends back to
+   *  itself the values that to not match with the position.
+   *
+   *  @param board The List to be placed in.
+   */
+  def place(num: Int, pos: Int, board: List[Int]): List[Int] =
+  {
+    if      (board.length == 0) Nil
+    else if (pos == 0) num :: board.tail
+    else    board.head :: place(num, (pos - 1), board.tail)
+  }
+
+  /**
+   *  Choose a movement according to the specified string.
+   */
+  def move(movement: String, board: List[Int], col: Int): List[Int] =
   {
     movement match
     {
-      case ("s"|"S") => moveDown(board, col, col * col, 0)
+      case ("s"|"S") => moveDown(board, col)
       case ("a"|"A") => moveLeft(board, col,            0)
       case ("d"|"D") =>  moveGen(board, col,            0)
       case ("w"|"W") =>   moveUp(board, col, col * col, 0)
