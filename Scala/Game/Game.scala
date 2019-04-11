@@ -1,7 +1,7 @@
 import Interface._
 import Board._
 import Color._
-import Movements._
+import Movement._
 
 /**
  * Main code of the program
@@ -43,7 +43,7 @@ object Game
         else
         {
           val pts = Board.getPoints(board)
-          val newBoard = Movements.mover(move, board, math.sqrt(board.size).toInt)            
+          val newBoard = Movement.mover(move, board, math.sqrt(board.size).toInt)            
           val seeded   = Board.seedBoard(newBoard)
           
           playGame(lives, pts, diff, seeded)

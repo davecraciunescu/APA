@@ -1,4 +1,4 @@
-object movimientos
+object Movement
 {
   /**
    * As all the movements are based on the right movement, the structure of a
