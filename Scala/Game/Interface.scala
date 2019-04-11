@@ -38,10 +38,11 @@ object Interface
       ((!str.isEmpty) && (str.matches("^\\d+$")) && (str.toInt >= low) && (str.toInt <= up))
     }
 
-    /** 
-     *  Analyze if input is a valid Move.
-     */
+    /** Analyze if input is a valid Move. */
     def isValidMove(): Boolean = str.matches("[wasdqWASDQ]")
+ 
+    /** Analyze if input is a valid confirmation value. */
+    def isValidConfirmation(): Boolean = str.matches("[ynYN]")
   }
   
   /** Implicit transformator of the String class. */
@@ -131,7 +132,7 @@ object Interface
   }
 
   /**
-   *  Pick a move and check if it's valid.
+   *  Returns a valid move from the user. {wasdWASD}
    */
   def pickMove(): String =
   {
@@ -141,8 +142,19 @@ object Interface
     else
     {
       println("Enter a correct move.")
-      pickMove()
+      pickMove
     }
+  }
+
+  /**
+   *  Returns true if the user wants to play again.
+   */
+  def playAgain(): Boolean =
+  {
+    val conf: String = scala.io.StdIn.readLine();
+
+    if (conf.isValidConfirmation) ((conf == "y") || (conf == "Y"))
+    else playAgain
   }
 
   /**

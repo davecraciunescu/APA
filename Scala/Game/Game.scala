@@ -59,14 +59,14 @@ object Game
     else Interface.exitGame
 
     // After being specified the difficulty, the game can finally start
-    createGame(diff)
+    createGame(difficulty)
   }
 
 
   /**
    *  Execute the game.
    */ 
-  def playGame(lives: Int, board: List[Int]) =
+  def playGame(lives: Int, diff: Int, board: List[Int]) =
   {
     if (lives > 0)
     {
@@ -75,22 +75,23 @@ object Game
         Interface.printBoard(board)
         printState(lives, Board.getPoints(board))
       
-        val move = Interface.pickMove()
+        val move = Interface.pickMove
 
-        if (move.matches("[Qq]")
-        {
-          println("Thanks for playing :)".green.bold)
-        }
+        if (move.matches("[Qq]") println("Thanks for playing :)".green.bold)
         else
         {
           // Invoke board value movement.
           // Join values in board.
-          // playGame(lives
+          // playGame(lives, diff, newBoard)
         }
+      } 
+      else 
+      {  
+        printEndScreen(Board.getPoints(board))
+
+        if (Interface.playAgain) playGame(lives - 1, createBoard(diff))
+        else println("Thanks for playing :)".green.bold)
       }
-      
-      // else  
-      
     }
     else 
     {  
