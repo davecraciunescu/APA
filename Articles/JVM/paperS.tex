@@ -1,0 +1,628 @@
+% This template has been tested with LLNCS DOCUMENT CLASS -- version 2.20 (10-Mar-2018)
+
+% !TeX spellcheck = en-US
+% !TeX encoding = utf8
+% !TeX program = pdflatex
+% !BIB program = bibtex
+% -*- coding:utf-8 mod:LaTeX -*-
+
+% "a4paper" enables:
+%  - easy print out on DIN A4 paper size
+%
+% One can configure a4 vs. letter in the LaTeX installation. So it is configuration dependend, what the paper size will be.
+% This option  present, because the current word template offered by Springer is DIN A4.
+% We accept that DIN A4 cause WTFs at persons not used to A4 in USA.
+
+%/ "runningheads" enables:
+%  - page number on page 2 onwards
+%  - title/authors on even/odd pages
+% This is good for other readers to enable proper archiving among other papers and pointing to
+% content. Even if the title page states the title, when printed and stored in a folder, when
+% blindly opening the folder, one could hit not the title page, but an arbitrary page. Therefore,
+% it is good to have title printed on the pages, too.
+%
+% It is enabled by default as the springer template as of 2018/03/10 uses this as default
+
+% German documents: pass ngerman as class option
+% \documentclass[ngerman,runningheads,a4paper]{llncs}[2018/03/10]
+% English documents: pass english as class option
+\documentclass[english,runningheads,a4paper]{llncs}[2018/03/10]
+
+%% If you need packages for other papers,
+%% START COPYING HERE
+
+% Set English as language and allow to write hyphenated"=words
+%
+% In case you write German, switch the parameters, so that the command becomes
+%\usepackage[english,main=ngerman]{babel}
+%
+% Even though `american`, `english` and `USenglish` are synonyms for babel package (according to https://tex.stackexchange.com/questions/12775/babel-english-american-usenglish), the llncs document class is prepared to avoid the overriding of certain names (such as "Abstract." -> "Abstract" or "Fig." -> "Figure") when using `english`, but not when using the other 2.
+% english has to go last to set it as default language
+\usepackage[ngerman,main=english]{babel}
+%
+% Hint by http://tex.stackexchange.com/a/321066/9075 -> enable "= as dashes
+\addto\extrasenglish{\languageshorthands{ngerman}\useshorthands{"}}
+%
+% Fix by https://tex.stackexchange.com/a/441701/9075
+\usepackage{regexpatch}
+\makeatletter
+\edef\switcht@albion{%
+  \relax\unexpanded\expandafter{\switcht@albion}%
+}
+\xpatchcmd*{\switcht@albion}{ \def}{\def}{}{}
+\xpatchcmd{\switcht@albion}{\relax}{}{}{}
+\edef\switcht@deutsch{%
+  \relax\unexpanded\expandafter{\switcht@deutsch}%
+}
+\xpatchcmd*{\switcht@deutsch}{ \def}{\def}{}{}
+\xpatchcmd{\switcht@deutsch}{\relax}{}{}{}
+\edef\switcht@francais{%
+  \relax\unexpanded\expandafter{\switcht@francais}%
+}
+\xpatchcmd*{\switcht@francais}{ \def}{\def}{}{}
+\xpatchcmd{\switcht@francais}{\relax}{}{}{}
+\makeatother
+
+\usepackage{ifluatex}
+\ifluatex
+  \usepackage{fontspec}
+  \usepackage[english]{selnolig}
+\fi
+
+\iftrue % use default-font
+  \ifluatex
+    % use the better (sharper, ...) Latin Modern variant of Computer Modern
+    \setmainfont{Latin Modern Roman}
+    \setsansfont{Latin Modern Sans}
+    \setmonofont{Latin Modern Mono} % "variable=false"
+    %\setmonofont{Latin Modern Mono Prop} % "variable=true"
+  \else
+    % better font, similar to the default springer font
+    % cfr-lm is preferred over lmodern. Reasoning at http://tex.stackexchange.com/a/247543/9075
+    \usepackage[%
+      rm={oldstyle=false,proportional=true},%
+      sf={oldstyle=false,proportional=true},%
+      tt={oldstyle=false,proportional=true,variable=false},%
+      qt=false%
+    ]{cfr-lm}
+  \fi
+\else
+  % In case more space is needed, it is accepted to use Times New Roman
+  \ifluatex
+    \setmainfont{TeX Gyre Termes}
+    \setsansfont[Scale=.9]{TeX Gyre Heros}
+    % newtxtt looks good with times, but no equivalent for lualatex found,
+    % therefore tried to replace with inconsolata.
+    % However, inconsolata does not look good in the context of LNCS ...
+    %\setmonofont[StylisticSet={1,3},Scale=.9]{inconsolata}
+    % ... thus, we use the good old Latin Modern Mono font for source code.
+    \setmonofont{Latin Modern Mono} % "variable=false"
+    %\setmonofont{Latin Modern Mono Prop} % "variable=true"
+  \else
+    % overwrite cmodern with the Times variant
+    \usepackage{newtxtext}
+    \usepackage{newtxmath}
+    \usepackage[zerostyle=b,scaled=.9]{newtxtt}
+  \fi
+\fi
+
+\ifluatex
+\else
+  % fontenc and inputenc are not required when using lualatex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc} %support umlauts in the input
+\fi
+
+\usepackage{graphicx}
+
+% backticks (`) are rendered as such in verbatim environment. See https://tex.stackexchange.com/a/341057/9075 for details.
+\usepackage{upquote}
+
+% Nicer tables (\toprule, \midrule, \bottomrule - see example)
+\usepackage{booktabs}
+
+%extended enumerate, such as \begin{compactenum}
+\usepackage{paralist}
+
+%put figures inside a text
+%\usepackage{picins}
+%use
+%\piccaptioninside
+%\piccaption{...}
+%\parpic[r]{\includegraphics ...}
+%Text...
+
+% For easy quotations: \enquote{text}
+% This package is very smart when nesting is applied, otherwise textcmds (see below) provides a shorter command
+\usepackage{csquotes}
+
+% For even easier quotations: \qq{text}
+\usepackage{textcmds}
+
+%enable margin kerning
+\RequirePackage[%
+  babel,%
+  final,%
+  expansion=alltext,%
+  protrusion=alltext-nott]{microtype}%
+% \texttt{test -- test} keeps the "--" as "--" (and does not convert it to an en dash)
+\DisableLigatures{encoding = T1, family = tt* }
+
+%tweak \url{...}
+\usepackage{url}
+%\urlstyle{same}
+%improve wrapping of URLs - hint by http://tex.stackexchange.com/a/10419/9075
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+%nicer // - solution by http://tex.stackexchange.com/a/98470/9075
+%DO NOT ACTIVATE -> prevents line breaks
+%\makeatletter
+%\def\Url@twoslashes{\mathchar`\/\@ifnextchar/{\kern-.2em}{}}
+%\g@addto@macro\UrlSpecials{\do\/{\Url@twoslashes}}
+%\makeatother
+
+% Diagonal lines in a table - http://tex.stackexchange.com/questions/17745/diagonal-lines-in-table-cell
+% Slashbox is not available in texlive (due to licensing) and also gives bad results. This, we use diagbox
+%\usepackage{diagbox}
+
+% Required for package pdfcomment later
+\usepackage{xcolor}
+
+% For listings
+\usepackage{listings}
+\lstset{%
+  basicstyle=\ttfamily,%
+  columns=fixed,%
+  basewidth=.5em,%
+  xleftmargin=0.5cm,%
+  captionpos=b}%
+\renewcommand{\lstlistingname}{List.}
+% Fix counter as described at https://tex.stackexchange.com/a/28334/9075
+\usepackage{chngcntr}
+\AtBeginDocument{\counterwithout{lstlisting}{section}}
+
+% Enable nice comments
+\usepackage{pdfcomment}
+%
+\newcommand{\commentontext}[2]{\colorbox{yellow!60}{#1}\pdfcomment[color={0.234 0.867 0.211},hoffset=-6pt,voffset=10pt,opacity=0.5]{#2}}
+\newcommand{\commentatside}[1]{\pdfcomment[color={0.045 0.278 0.643},icon=Note]{#1}}
+%
+% Compatibality with packages todo, easy-todo, todonotes
+\newcommand{\todo}[1]{\commentatside{#1}}
+% Compatiblity with package fixmetodonotes
+\newcommand{\TODO}[1]{\commentatside{#1}}
+
+% Bibliopgraphy enhancements
+%  - enable \cite[prenote][]{ref}
+%  - enable \cite{ref1,ref2}
+% Alternative: \usepackage{cite}, which enables \cite{ref1, ref2} only (otherwise: Error message: "White space in argument")
+
+\ifluatex
+  % does not work when using luatex
+  % see: https://tex.stackexchange.com/q/419288/9075
+\else
+  % Prepare more space-saving rendering of the bibliography
+  % Source: https://tex.stackexchange.com/a/280936/9075
+  \SetExpansion
+  [ context = sloppy,
+    stretch = 30,
+    shrink = 60,
+    step = 5 ]
+  { encoding = {OT1,T1,TS1} }
+  { }
+\fi
+
+% Put footnotes below floats
+% Source: https://tex.stackexchange.com/a/32993/9075
+\usepackage{stfloats}
+\fnbelowfloat
+
+% Enable that parameters of \cref{}, \ref{}, \cite{}, ... are linked so that a reader can click on the number an jump to the target in the document
+\usepackage{hyperref}
+% Enable hyperref without colors and without bookmarks
+\hypersetup{hidelinks,
+  colorlinks=true,
+  allcolors=black,
+  pdfstartview=Fit,
+  breaklinks=true}
+%
+% Enable correct jumping to figures when referencing
+\usepackage[all]{hypcap}
+
+\usepackage[group-four-digits,per-mode=fraction]{siunitx}
+
+%enable \cref{...} and \Cref{...} instead of \ref: Type of reference included in the link
+\usepackage[capitalise,nameinlink]{cleveref}
+%Nice formats for \cref
+\usepackage{iflang}
+\IfLanguageName{ngerman}{
+  \crefname{table}{Tab.}{Tab.}
+  \Crefname{table}{Tabelle}{Tabellen}
+  \crefname{figure}{\figurename}{\figurename}
+  \Crefname{figure}{Abbildungen}{Abbildungen}
+  \crefname{equation}{Gleichung}{Gleichungen}
+  \Crefname{equation}{Gleichung}{Gleichungen}
+  \crefname{listing}{\lstlistingname}{\lstlistingname}
+  \Crefname{listing}{Listing}{Listings}
+  \crefname{section}{Abschnitt}{Abschnitte}
+  \Crefname{section}{Abschnitt}{Abschnitte}
+  \crefname{paragraph}{Abschnitt}{Abschnitte}
+  \Crefname{paragraph}{Abschnitt}{Abschnitte}
+  \crefname{subparagraph}{Abschnitt}{Abschnitte}
+  \Crefname{subparagraph}{Abschnitt}{Abschnitte}
+}{
+  \crefname{section}{Sect.}{Sect.}
+  \Crefname{section}{Section}{Sections}
+  \crefname{listing}{\lstlistingname}{\lstlistingname}
+  \Crefname{listing}{Listing}{Listings}
+}
+
+
+%Intermediate solution for hyperlinked refs. See https://tex.stackexchange.com/q/132420/9075 for more information.
+\newcommand{\Vlabel}[1]{\label[line]{#1}\hypertarget{#1}{}}
+\newcommand{\lref}[1]{\hyperlink{#1}{\FancyVerbLineautorefname~\ref*{#1}}}
+
+\usepackage{xspace}
+%\newcommand{\eg}{e.\,g.\xspace}
+%\newcommand{\ie}{i.\,e.\xspace}
+\newcommand{\eg}{e.\,g.,\ }
+\newcommand{\ie}{i.\,e.,\ }
+
+%introduce \powerset - hint by http://matheplanet.com/matheplanet/nuke/html/viewtopic.php?topic=136492&post_id=997377
+\DeclareFontFamily{U}{MnSymbolC}{}
+\DeclareSymbolFont{MnSyC}{U}{MnSymbolC}{m}{n}
+\DeclareFontShape{U}{MnSymbolC}{m}{n}{
+  <-6>    MnSymbolC5
+  <6-7>   MnSymbolC6
+  <7-8>   MnSymbolC7
+  <8-9>   MnSymbolC8
+  <9-10>  MnSymbolC9
+  <10-12> MnSymbolC10
+  <12->   MnSymbolC12%
+}{}
+\DeclareMathSymbol{\powerset}{\mathord}{MnSyC}{180}
+
+\ifluatex
+\else
+  % Enable copy and paste - also of numbers
+  % This has to be done instead of \usepackage{cmap}, because it does not work together with cfr-lm.
+  % See: https://tex.stackexchange.com/a/430599/9075
+  \input glyphtounicode
+  \pdfgentounicode=1
+\fi
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+%% END COPYING HERE
+
+
+% Add copyright
+% Do that for the final version or if you send it to colleagues
+\iffalse
+  %state: intended|submitted|llncs
+  %you can add "crop" if the paper should be cropped to the format Springer is publishing
+  \usepackage[intended]{llncsconf}
+
+  \conference{name of the conference}
+
+  %in case of "llncs" (final version!)
+  %example: llncs{Anonymous et al. (eds). \emph{Proceedings of the International Conference on \LaTeX-Hacks}, LNCS~42. Some Publisher, 2016.}{0042}
+  \llncs{book editors and title}{0042} %% 0042 is the start page
+\fi
+
+% For demonstration purposes only
+\usepackage[math]{blindtext}
+\usepackage{mwe}
+\usepackage[backend=biber, style=numeric]{biblatex}
+\addbibresource{java.bib}
+
+\begin{document}
+
+\title{Procesos Importantes de la Máquina Virtual de Java}
+
+\author{Laura Pérez Medeiro}
+\institute{Universidad de Alcala}
+
+\maketitle
+
+\abstract{La Máquina Virtual de Java (JVM) es uno de los sistemas de ejecución
+de código más empleados hoy en día. En el mundo de la programación, el esquema
+de ejecución por máquina virtual es uno de los más famosos, ya que este método tiene
+muchas de las ventajas de la ejecucicón en máquinas virtuales, como no estar
+ligado a ningún sistema operativo en particular, a la vez que disfruta de
+características como alta seguridad o buen rendimiento a la hora de ejecutar
+código. Este artículo explorará los procesos más importantes de la JVM y cómo
+esta consigue transformar código Java (y no solo Java) en un programa
+ejecutable.}
+
+\section*{La Máquina Virtual de Java: Una perspectiva de alto nivel}
+Al analizar el gran abanico de herramientas que es el lenguaje de programación
+Java, el lector comprenderá de inmediato que el punto central es la Máquina
+Virtual de Java. Las características más importantes que se pueden encontrar en
+Java se deben a la existencia de la JVM. Desde la independencia
+\textit{hardware} y de sistema operativo, hasta el pequeño tamaño de su código
+compilado, la JVM está involucrada de alguna manera u otra.
+
+Si se analizara la JVM por dentro esta podría ser descrita como una máquina de
+computación abstracta (o \textit{Abstract Computing Machine}). Como ya se ha
+mencionado, hoy en día, implementar un lenguaje de programación en base a una
+máquina virtual no es algo extraordinario, y algunos de los lenguajes con mejor
+rendimiento están implementados de esta maner.
+
+La primera vez que se implementó la Máquina Virtual de Java con éxito, apenas
+emulaba el set de instrucciones de la JVM en una antigua PDA. Desde entonces,
+las implementaciones más modernas han sido capaces de ejecutar funcionar en
+prácticamente cualquier tipo de plataforma imaginable. De hecho, esa es una de
+las características más atractivas de JVM, la máquina virtual no está diseñada
+para ninguna arquitectura en concreto y puede ejecutarse en la enorme mayoría de
+sistemas operativos modernos; de la misma manera podría ser implementada en un
+chip físico, si esto fuera útil para el implementador.
+
+Aunque sea el punto central del lenguaje de programación Java, la JVM conoce
+prácticamente nada del lenguaje mismo, ya que esta funciona completamente en
+base al formato de archivo llamado \textit{class}. Este formato contiene
+instrucciones de ejecución para la JVM, una tabla de símbolos y otra información
+útil.
+
+La JVM crea proactivamente límites sobre la estructura y la sintaxis del código
+de los archivos \textit{class}. Gracias a esto, cualquier lenguaje de
+programación que pueda ser expresado en un archivo \textit{class} podrá ser
+ejecutado en la JVM. La filosofía general de la JVM es ser un intermediario
+generalista e independiente a la arquitectura de la máquina para cualquier
+lenguaje de programación que quiera hacer uso de ella.
+
+\section*{De Java a 1s y 0s: \textit{bytecode}}
+Por dentro, la JVM es una máquina de pila (aunque también emplee registros).
+Dentro de la ejecución del código, cada marco para un método emplea una pila de
+operandos y un array de variables locales. El array de operandos es usado para
+computaciones y para recibir valores de retorno, mientras que las variables
+locales tienen el mismo fin que los registros. El tamaño máximo para la pila de
+operandos es parte de los atributos de cada método y generalmente se suele
+encontrar entre 0 y 4294967295, donde cada valor tiene 32 bits.
+
+Como ya se mencionó anteriormente, los \textit{bytecodes} son lenguaje con el
+que la JVM funciona. Cuando la JVM carga un archivo \textit{class}, se encarga
+de coger los \textit{streams} de bytecodes de cada método individual dentro de
+la clase a la que pertenecen, y los guarda en el área de método (o
+\textit{method area}). Estos streams pueden ser ejecutados con la misma
+ejecución misma del programa, y se ejecutarán mediante interpretación,
+compilación \textit{just-in-time}, o cualquier otro método escogido por el
+implementador de la JVM en concreto.
+
+Con objetivo de aclarar el concepto, el \textit{stream} de \textit{bytecode} de
+un método en concreto, es la secuencia de instrucciones de la Máquina Virtual de
+Java que esta debe seguir precisa y exactamente. Cada instrucción contiene un
+\textit{opcode} de 8 bits, posiblemente seguido de al menos un operando (e
+información extra si fuera necesaria por la instrucción en concreto que la JVM
+estuviera ejecutando en ese momento).
+
+El set de instrucciones del \textit{bytecode} fue diseñado para ser
+extremadamente compacto. Por ese mismo motivo, la enorme mayoría de
+instrucciones se alinean con los límites de un byte. Es decir, están diseñadas
+teniendo en cuenta la eliminación de codificacion extra o innecesaria como pilar
+principal. Gracias a esto mismo se consigue el el número de \textit{opcodes} sea
+lo suficientemente pequeño como para que se pueda notar una reducción
+significativa en el tamaño de los archivos que la JVM emplea.
+
+Aunque la JVM sea técnicamente un autómata de pila y de registros a la vez, esta
+no dispone de registros que le permitan guardar valores arbitrarios, así que
+todo deberá ser colocado en la pila antes de que se pueda usar en un cálculo. La
+JVM fue diseñada para ser híbrida por naturaleza, pero se centró en el aspecto
+de la pila para facilitar la implementación de la misma en arquitecturas que no
+disponían de un gran abanico de registros para sus operaciones. Por tanto, es
+importante mencionar que aunque la JVM sea un autómata híbrido (de pila y
+registros), los\textit{bytecodes} operan principalmente en la pila.
+
+\subsection*{Tipos}
+Just like the Java programming language, the JVM operates on two different kinds
+of types: \textit{primitive types} and \textit{reference types}\footnote{Se
+puede decir que los tipos de referencia son prácticamente el sistema de
+objectos/punteros a objetos de otros lenguajes de programación}.
+
+Al igual que el lenguaje de programación Java, la JVM opera con tipos primitivos
+y tipos de referencia. Esta espera que prácticamente todas las comprobaciones
+sean realizadas antes del tiempo de ejecución (generalmente por el compilador) y
+que la responsabilidad no recae en la JVM misma. Por ese mismo motivo, los
+valores primitivos no tienen que estar marcados con un identificador que los
+diferencie por tipo del resto de los valores en tiempo de ejecución. Lo que la
+JVM hace es crear diferentes series de variaciones en base a la misma operación
+que se adaptan a los tipos con los que tengan que cuadrar. Explicado de una
+manera un poco más simple: para la operación de tipo X que puede ejecutar la
+JVM, esta creará variaciones para cada tipo de primitiva dentro de la operación
+X y, en vez de tener que identificar los tipos a la hora de aplicar la
+operación, simplemente usa la variación correspondiente.
+
+\subsubsection*{Tipos numéricos}
+The numeric types consist of the \textit{integral types} and the
+\textit{floating point types}.
+
+Los tipos numéricos consisten de \textit{tipos integrales} y de los
+\textit{tipos de punto flotante}.
+
+Los tipos integrales son los siguientes: \textit{\textbf{byte}},
+\textit{\textbf{short}}, \textit{\textbf{int}} y
+\textit{\textbf{long}}. Estos son valores numéricos de 8, 16, 32 y 64 bits
+respectivamente en complemento a dos, y cuyo valor por defecto es
+0. Sus valores van entre \(-2^{num bits-1}\) y \(2^{num bits-1}\)
+inclusivamente. \parencite{jvmspec}
+
+Dentro de los tipos integrales también existe el tipo \textit{char}, cuyos
+valores son numéricos de 16 bits en binario puro representando los valores
+\textit{Unicode} y codificados en \textit{UTF-16}. El rango de valores aceptados
+está entre el 0 y el 65535 incluído.
+
+Los tipos de punto flotante son: \textbf{\textit{float}} y
+\textbf{\textit{double}} y son elementos del \textit{value set} de cada uno
+correspondientemente, y cuyo valor por defecto es cero.
+
+\section*{La creación de un ejecutable}
+El proceso de ejecución del compilador de Java (\textit{javac} generalmente), un
+archivo \textit{class} es creado. Como bien podrá comprender el lector, ese
+archivo aún está lejos de poder ser ejecutado por el ordenador, y tendrá que
+verse sometido a una serie de procesos para convertir lo que antes era código
+Java en instrucciones para el procesador. El archivo aún es totalmente
+dependiente del JVM, y gracias a este el archivo dispone de una plataforma donde
+ejecutar sus acciones. La máquina virtual de Java actúa de intermediario entre
+el programa y el ordenador y controla los recursos de este mismo.
+
+Esto no ocurre automáticamente, si se analizan internamente los procesos que la
+JVM lleva a cabo, se pueden encontrar rápidamente tres que resaltan por enima de
+los demás. Estos se llaman \textit{carga, enlazado e inicialización}.
+
+\subsection*{Carga}
+El proceso de carga o \textit{loading} se define de una manera muy simple. Según
+la especificación online de la máquina virtual de Java \parencite{jvmspec}. Este
+es el \textit{proceso de encontrar la representación binaria de una clase o
+interfaz con un nombre en concreto y crear una clase o interfaz en base a esa
+representación binaria}.
+
+Hay dos tipos principales de cargadores de clases de la JVM: (1) el
+cargador de clases \textit{bootstrap} y (2) el cargador de clases definido por
+el usuario. El cargador \textit{bootstrap} es el cargador por defecto,
+estrictamente definido por la especificación estándar de la JVM, y carga los
+archivos según la misma. Por otra parte, el cargador definido por el usuario
+está diseñado para que su implementación pueda ser alterada y carga las clases
+a través de la instancia de \textit{java.lang.Class}.
+
+Normalmente, un cargador de clases guarda la representación binaria de aquello
+que va a cargar antes de que esta haga falta. De esta manera, se puede asegurar
+tenerla preparada para el momento en el que la tenga que emplear, y al tenerla
+cargada pueda mejorar el rendimiento del proceso de cargado. Cabe la pena
+mencionar que si cualquier error se encuentra en las fases iniciales del proceso
+de cargado, la JVM espera hasta que la clase o interfaz que contiene ese error
+sea invocado para reportar la existencia del mismo. Si no se invoca o referencia
+la clase que contiene el error, este podrá persistir y JVM no notificará de su
+existencia, aunque sea consciente de ella.
+
+Por tanto, se podría decir que el proceso de carga se resume en los siguientes
+pasos principales: (1) creación de un \textit{stream} binario de datos desde el archivo
+\textit{class} y (2) \textit{parseo}.
+
+\subsection*{Enlazado}
+Según la especificación online del JVM, el proceso de enlazado es \textit{el
+proceso en el que se combina una clase o interfaz con el estado de ejecución de
+la JVM para que pueda ser ejecutado}.
+
+Este proceso empieza con una fase llamada \textit{verificación} de la clase.
+Aquí es donde la JVM se asegura de que el código siga los criterior sintácticos
+del lenguaje y que añadirlo al entorno de ejecución no vaya a crear ninguna
+disrupción en el estado de la JVM. Aunque este proceso está estrictamente
+definido y estandarizado por la JVM, la especificación sigue siendo lo
+suficientemente flexible como para que esta sea alterada por los diferentes
+implementadores y estos puedan decidir cómo deberían ejecutarse los diferentes
+procesos de enlazado.
+
+Entre otros procesos que ocurren en la fase de enlazados se pueden encontrar
+todas las pequeñas excepciones que pueden ocurrir debido a la extensiva lista de
+casos indeseados que la JVM especifica. La máquina virtual de Java completa
+estas comprobaciones desde el principio y se asegura que pequeños errores no
+detectados desde un buen comienzo no hagan que el programa vaya a
+\textit{crashear}. También se hacen diferentes comprobaciones para asegurarse
+que la estrucutra de los datos binarios se alinean con el formato esperado.
+Aunque haya múltiples verificaciones a lo largo de los diferentes pasos,
+generalmente se considera que los procesos de verificación empiezan realmente en
+la fase de enlazado.
+
+Una vez que los procesos de verificación de la fase de enlazado se han compleato
+con éxito, la JVM reserva memoria para las variables de clase y las inicializa
+correspondiendo con sus respectivos tipos. Cabe mencionar que esta no es la
+inicialización \textit{real} (con los valores definidos por el usuario) y que
+esta no ocurre hasta la siguiente fase de inicialización. Este proceso se
+denomina como \textit{preparación}.
+
+Al final del todo, en la fase \textbf{opcional} de resolución, la JVM localiza
+las referencias de cualquier clase, campo o método en la tabla de símbolos y
+determina sus valores reales. Al igual que muchas otras características, este
+proceso también puede ser customizado por los implementadores de la máquina
+virtual para que siga los pasos específicos que estos deseen.
+
+\subsection*{Inicialización}
+Al igual que en los apartados anteriores, se empleará la especificación oficial
+de la JVM. En esta se describe el proceso de inicialización como \textit{la
+ejecución de el método de inicialización de una clase o interfaz}.
+
+Este proceso es extremadamente simple, dado que lo que realmente se consigue es
+que la clase o interfaz esté preparada para su uso real. El proceso comienza con
+la inicialización de las variables de clase con los valores especificados. Esto
+significa que las variables de clase son inicializadas por medio de alguna
+rutina de inicialización escrita por el programador. También hay que tener en
+cuenta la inicialización de las superclases si estas no lo hubieran sido con
+anterioridad. 
+
+\section*{Características importantes}
+Como ya mencionó al principio de este artículo, el uso de ejecución en base a
+máquina virtual para lenguajes de programación tiene tanto sus ventajas como
+desventajas. Esta sección se comentarán y analizarán las características más
+importantes de la máquina virtual de Java.
+
+\subsection*{Independencia de plataforma}
+Una de las características más importantes de la máquina virtual de Java es su
+extrema independencia de la plataforma en la que se ejecuta. La JVM tiene la
+habilidad de ser instalada en prácticamente cualquier sistema operativo y
+arquitectura y funcionar de la misma manera. De hecho, hoy en día la JVM puede
+ejecutarse desde sistemas empotrados hasta dispositivos móviles. Esta
+transformará los programas a \textit{bytecode} igualmente.
+
+Hoy en día Java corre en miles de millones de dispositivos, y no sería
+descabellado pensar que su independencia de la plataforma es uno de los
+factores que han podido influenciar su desarrollo de esa manera. 
+
+\subsection*{Seguridad}
+Uno de los pilares de la filosofía de JVM mientras se diseñaba inicialmente era
+la seguridad. La JVM hace escaneos exhaustivos del bytecode que va a ejecutar
+para poder asegurar que este no contenga ninguna instrucción posiblemente
+maliciosa o no segura, como acceso a lugares prohibidos dentro de la memoria,
+operaciones privilegiadas, etc.\ También hay una serie de reglas que ningún
+programa puede romper mientras se ejecuta, lo que consigue un nivel de seguridad
+superior: si por cualquier casual superara los checkeos pre-ejecución, es
+prácticamente seguro que se capture el error en tiempo de ejecución. Esto es
+especialmente efectivo para la prevención de errores relacionados con la
+corrupión de memoria (los cuales son muy frecuentes en lenguajes como C, que no
+realiza ningún checkeo de este estilo).
+
+También se prohibe la realización de aritmética de punteros y \textit{casteo} de
+variables sin precomprobación de que este funcione. Asimismo, no se permite la
+reserva y liberación de memoria de manera manual; el usuario del lenguaje deberá
+basarse en el recolector de basura por defecto para esas labores.
+
+\subsection*{Velocidad}
+El hecho de emplear una máquina virtual es a la vez ventaja y desventaja para
+Java. En el aspecto velocidad, cualquier máquina virtual será más lenta que un
+lenguaje compilado directamente, por definición. Aunque esto no significa que la JVM
+sea radicalmente más diferente que los lenguajes basados en C.
+
+En los inicicios de Java sus tiempos de ejecución y su rendimiento eran factores
+de alta preocupación entre sus usuarios. Desde entonces, las diferentes
+versiones y optimizaciones han conseguido que, incluso siendo un lenguaje
+basado en máquina virtual, los lengujes como C le saquen muy poca ventaja
+respecto a tiempos de ejecución. De hecho, Java sigue siendo uno de los
+lenguajes con más rendimiento de hoy en día.
+
+El \textit{bytecode} de Java puede ser interpretado en tiempo de ejecución por
+la máquina virtual o compilado en código nativo que corre directamente en el
+hardware de la máquina. La interpretación siempre es más lenta que la
+compilación, por lo que la mayoría de implementaciones modernas de la JVM que se
+precien emplearán compilación por defecto. Aunque este método tenga un
+\textit{overhead} inicial por la necesidad de compilar el propio código, una vez
+compilado Java tien prácticamente la misma (por no decir más) velocidad que 
+lenguajes modernos decaracterísticas similares.
+
+\subsection*{Imposibilidad de cambiar características definidas por el sistema}
+La máquina virtual es muy flexible a la hora de adaptarse al sistema y a la
+arquitectura en la que esta se ejecute. Aun así, hay ciertas características por
+defecto de estos mismos que simplemente no se pueden cambiar. Un claro ejemplo
+es el de las interfaces gráficas de usuario: por mucho que la JVM defina un
+\textit{look and feel} predeterminados, si el sistema operativo fuerza su propia
+interfaz a todos los programas, JVM no tendrá más opción que obedecer y ejecutar
+con esos parámetros por defecto.
+
+Hay que recordar que JVM sigue siendo un mero programa que corre en un sistema
+operativo, independientemente de que este sirva para que otros programas se
+ejecuten en base a él.
+
+\newpage
+\printbibliography
+
+\end{document}
