@@ -371,7 +371,7 @@ The JVM enforces strong syntactic and structural constraints on the code of the
 expressed as a valid \textit{class} file is able to be hosted on the Java
 Virtual Machine. The general philosophy of the JVM is to be an available and
 machine-independent delivery vehicle for the programming languages that want to
-make use of it.
+make use of it. \parencite{gojava}
 
 \section*{Instruction set and the class file}
 The JVM is both a stack machine and a register machine. Each frame for a method
@@ -380,7 +380,7 @@ stack is used for operand to computations and for receiving the return value of
 a called method, while local variables serve the same purpose as registers and
 are also used to pass method arguments. The maximum size of the operand stack
 and local variable array, computed by the compiler, is part of the attributes of
-each method. Each can be independently size from \textit{0} to \(2^{32} - 1\),
+each method. Each can independently size from \textit{0} to \(2^{32} - 1\),
 where each value is 32 bits.
 
 \textit{long} and \textit{double} types, which are 64 bits, take up to two
@@ -515,6 +515,7 @@ according to the internal data structure.\footnote{Even though the JVM is able
 to carry out much more in the linking phase, these two processes are considered
 the most important ones.}
 
+\newpage
 \subsection*{Linking}
 In the same fashion as the last section, according to the \textit{Official
 Specification}, the process of linking is the \textit{``process of taking a
@@ -539,7 +540,7 @@ generally considered that the official verification begins with the linking
 process.
 
 Once the verification is complete, JVM allocates the memory for the class
-variables and initialies them according to their respective types. The actual
+variables and initializes them according to their respective types. The actual
 initialization (with user-defined values) does not occur until the next
 initialization phase. This process has the name of \textit{preparation}.
 
@@ -572,7 +573,7 @@ super classes if not already initialized.
 \section*{Advantages and disadvantages}
 As mentioned in the first part of this paper, the use of a
 \textit{virtual-machine} based compilation and execution method has both its
-advantages and its drawbacks. While many consider the benefits far outweight the
+advantages and its drawbacks. While many consider the benefits far outweigh the
 disadvantages, there are still those that believe this scheme to be a misguided one.
 In this section, the most prominent advantages and disadvantages of the Java
 Virtual Machine can be found. \parencite{jvmspec}
@@ -630,14 +631,14 @@ code.
 The Java Virtual Machine has been developed to be compatible with multiple
 Operating Systems. These systems have specific and special features and that
 cannot really be changed by a program running on them e.g. the JVM. Therefore,
-even if the JVM may be a sandbox for Java Code, it still has its limitations
+even if the JVM is a sandbox for Java Code, it still has its limitations
 when it comes to the Operating System itself. A clear example can be that of
 Graphical User Interfaces. Even though the JVM may specify exactly the look and
 feel of the program, the operating system can easily override that specification
 and enforce its own rules.
 
 \subsection*{Correctness}
-A program that performs, as expected, it said to be correct. Since a Java
+A program that performs, as expected, is said to be correct. Since a Java
 program relies on the Java Virtual Machine to execute it, the JVM must be free
 of errors for the program to operate correctly. This reliance on the Java
 Virtual Machine introduces a possible point of failure for the program. Luckily,
