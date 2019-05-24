@@ -1,0 +1,508 @@
+% This template has been tested with LLNCS DOCUMENT CLASS -- version 2.20 (10-Mar-2018)
+
+% !TeX spellcheck = en-US
+% !TeX encoding = utf8
+% !TeX program = pdflatex
+% !BIB program = bibtex
+% -*- coding:utf-8 mod:LaTeX -*-
+
+% "a4paper" enables:
+%  - easy print out on DIN A4 paper size
+%
+% One can configure a4 vs. letter in the LaTeX installation. So it is configuration dependend, what the paper size will be.
+% This option  present, because the current word template offered by Springer is DIN A4.
+% We accept that DIN A4 cause WTFs at persons not used to A4 in USA.
+
+%/ "runningheads" enables:
+%  - page number on page 2 onwards
+%  - title/authors on even/odd pages
+% This is good for other readers to enable proper archiving among other papers and pointing to
+% content. Even if the title page states the title, when printed and stored in a folder, when
+% blindly opening the folder, one could hit not the title page, but an arbitrary page. Therefore,
+% it is good to have title printed on the pages, too.
+%
+% It is enabled by default as the springer template as of 2018/03/10 uses this as default
+
+% German documents: pass ngerman as class option
+% \documentclass[ngerman,runningheads,a4paper]{llncs}[2018/03/10]
+% English documents: pass english as class option
+\documentclass[english,runningheads,a4paper]{llncs}[2018/03/10]
+
+%% If you need packages for other papers,
+%% START COPYING HERE
+
+% Set English as language and allow to write hyphenated"=words
+%
+% In case you write German, switch the parameters, so that the command becomes
+%\usepackage[english,main=ngerman]{babel}
+%
+% Even though `american`, `english` and `USenglish` are synonyms for babel package (according to https://tex.stackexchange.com/questions/12775/babel-english-american-usenglish), the llncs document class is prepared to avoid the overriding of certain names (such as "Abstract." -> "Abstract" or "Fig." -> "Figure") when using `english`, but not when using the other 2.
+% english has to go last to set it as default language
+\usepackage[ngerman,main=english]{babel}
+%
+% Hint by http://tex.stackexchange.com/a/321066/9075 -> enable "= as dashes
+\addto\extrasenglish{\languageshorthands{ngerman}\useshorthands{"}}
+%
+% Fix by https://tex.stackexchange.com/a/441701/9075
+\usepackage{regexpatch}
+\makeatletter
+\edef\switcht@albion{%
+  \relax\unexpanded\expandafter{\switcht@albion}%
+}
+\xpatchcmd*{\switcht@albion}{ \def}{\def}{}{}
+\xpatchcmd{\switcht@albion}{\relax}{}{}{}
+\edef\switcht@deutsch{%
+  \relax\unexpanded\expandafter{\switcht@deutsch}%
+}
+\xpatchcmd*{\switcht@deutsch}{ \def}{\def}{}{}
+\xpatchcmd{\switcht@deutsch}{\relax}{}{}{}
+\edef\switcht@francais{%
+  \relax\unexpanded\expandafter{\switcht@francais}%
+}
+\xpatchcmd*{\switcht@francais}{ \def}{\def}{}{}
+\xpatchcmd{\switcht@francais}{\relax}{}{}{}
+\makeatother
+
+\usepackage{ifluatex}
+\ifluatex
+  \usepackage{fontspec}
+  \usepackage[english]{selnolig}
+\fi
+
+\iftrue % use default-font
+  \ifluatex
+    % use the better (sharper, ...) Latin Modern variant of Computer Modern
+    \setmainfont{Latin Modern Roman}
+    \setsansfont{Latin Modern Sans}
+    \setmonofont{Latin Modern Mono} % "variable=false"
+    %\setmonofont{Latin Modern Mono Prop} % "variable=true"
+  \else
+    % better font, similar to the default springer font
+    % cfr-lm is preferred over lmodern. Reasoning at http://tex.stackexchange.com/a/247543/9075
+    \usepackage[%
+      rm={oldstyle=false,proportional=true},%
+      sf={oldstyle=false,proportional=true},%
+      tt={oldstyle=false,proportional=true,variable=false},%
+      qt=false%
+    ]{cfr-lm}
+  \fi
+\else
+  % In case more space is needed, it is accepted to use Times New Roman
+  \ifluatex
+    \setmainfont{TeX Gyre Termes}
+    \setsansfont[Scale=.9]{TeX Gyre Heros}
+    % newtxtt looks good with times, but no equivalent for lualatex found,
+    % therefore tried to replace with inconsolata.
+    % However, inconsolata does not look good in the context of LNCS ...
+    %\setmonofont[StylisticSet={1,3},Scale=.9]{inconsolata}
+    % ... thus, we use the good old Latin Modern Mono font for source code.
+    \setmonofont{Latin Modern Mono} % "variable=false"
+    %\setmonofont{Latin Modern Mono Prop} % "variable=true"
+  \else
+    % overwrite cmodern with the Times variant
+    \usepackage{newtxtext}
+    \usepackage{newtxmath}
+    \usepackage[zerostyle=b,scaled=.9]{newtxtt}
+  \fi
+\fi
+
+\ifluatex
+\else
+  % fontenc and inputenc are not required when using lualatex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc} %support umlauts in the input
+\fi
+
+\usepackage{graphicx}
+
+% backticks (`) are rendered as such in verbatim environment. See https://tex.stackexchange.com/a/341057/9075 for details.
+\usepackage{upquote}
+
+% Nicer tables (\toprule, \midrule, \bottomrule - see example)
+\usepackage{booktabs}
+
+%extended enumerate, such as \begin{compactenum}
+\usepackage{paralist}
+
+%put figures inside a text
+%\usepackage{picins}
+%use
+%\piccaptioninside
+%\piccaption{...}
+%\parpic[r]{\includegraphics ...}
+%Text...
+
+% For easy quotations: \enquote{text}
+% This package is very smart when nesting is applied, otherwise textcmds (see below) provides a shorter command
+\usepackage{csquotes}
+
+% For even easier quotations: \qq{text}
+\usepackage{textcmds}
+
+%enable margin kerning
+\RequirePackage[%
+  babel,%
+  final,%
+  expansion=alltext,%
+  protrusion=alltext-nott]{microtype}%
+% \texttt{test -- test} keeps the "--" as "--" (and does not convert it to an en dash)
+\DisableLigatures{encoding = T1, family = tt* }
+
+%tweak \url{...}
+\usepackage{url}
+%\urlstyle{same}
+%improve wrapping of URLs - hint by http://tex.stackexchange.com/a/10419/9075
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+%nicer // - solution by http://tex.stackexchange.com/a/98470/9075
+%DO NOT ACTIVATE -> prevents line breaks
+%\makeatletter
+%\def\Url@twoslashes{\mathchar`\/\@ifnextchar/{\kern-.2em}{}}
+%\g@addto@macro\UrlSpecials{\do\/{\Url@twoslashes}}
+%\makeatother
+
+% Diagonal lines in a table - http://tex.stackexchange.com/questions/17745/diagonal-lines-in-table-cell
+% Slashbox is not available in texlive (due to licensing) and also gives bad results. This, we use diagbox
+%\usepackage{diagbox}
+
+% Required for package pdfcomment later
+\usepackage{xcolor}
+
+% For listings
+\usepackage{listings}
+\lstset{%
+  basicstyle=\ttfamily,%
+  columns=fixed,%
+  basewidth=.5em,%
+  xleftmargin=0.5cm,%
+  captionpos=b}%
+\renewcommand{\lstlistingname}{List.}
+% Fix counter as described at https://tex.stackexchange.com/a/28334/9075
+\usepackage{chngcntr}
+\AtBeginDocument{\counterwithout{lstlisting}{section}}
+
+% Enable nice comments
+\usepackage{pdfcomment}
+%
+\newcommand{\commentontext}[2]{\colorbox{yellow!60}{#1}\pdfcomment[color={0.234 0.867 0.211},hoffset=-6pt,voffset=10pt,opacity=0.5]{#2}}
+\newcommand{\commentatside}[1]{\pdfcomment[color={0.045 0.278 0.643},icon=Note]{#1}}
+%
+% Compatibality with packages todo, easy-todo, todonotes
+\newcommand{\todo}[1]{\commentatside{#1}}
+% Compatiblity with package fixmetodonotes
+\newcommand{\TODO}[1]{\commentatside{#1}}
+
+% Bibliopgraphy enhancements
+%  - enable \cite[prenote][]{ref}
+%  - enable \cite{ref1,ref2}
+% Alternative: \usepackage{cite}, which enables \cite{ref1, ref2} only (otherwise: Error message: "White space in argument")
+
+\ifluatex
+  % does not work when using luatex
+  % see: https://tex.stackexchange.com/q/419288/9075
+\else
+  % Prepare more space-saving rendering of the bibliography
+  % Source: https://tex.stackexchange.com/a/280936/9075
+  \SetExpansion
+  [ context = sloppy,
+    stretch = 30,
+    shrink = 60,
+    step = 5 ]
+  { encoding = {OT1,T1,TS1} }
+  { }
+\fi
+
+% Put footnotes below floats
+% Source: https://tex.stackexchange.com/a/32993/9075
+\usepackage{stfloats}
+\fnbelowfloat
+
+% Enable that parameters of \cref{}, \ref{}, \cite{}, ... are linked so that a reader can click on the number an jump to the target in the document
+\usepackage{hyperref}
+% Enable hyperref without colors and without bookmarks
+\hypersetup{hidelinks,
+  colorlinks=true,
+  allcolors=black,
+  pdfstartview=Fit,
+  breaklinks=true}
+%
+% Enable correct jumping to figures when referencing
+\usepackage[all]{hypcap}
+
+\usepackage[group-four-digits,per-mode=fraction]{siunitx}
+
+%enable \cref{...} and \Cref{...} instead of \ref: Type of reference included in the link
+\usepackage[capitalise,nameinlink]{cleveref}
+%Nice formats for \cref
+\usepackage{iflang}
+\IfLanguageName{ngerman}{
+  \crefname{table}{Tab.}{Tab.}
+  \Crefname{table}{Tabelle}{Tabellen}
+  \crefname{figure}{\figurename}{\figurename}
+  \Crefname{figure}{Abbildungen}{Abbildungen}
+  \crefname{equation}{Gleichung}{Gleichungen}
+  \Crefname{equation}{Gleichung}{Gleichungen}
+  \crefname{listing}{\lstlistingname}{\lstlistingname}
+  \Crefname{listing}{Listing}{Listings}
+  \crefname{section}{Abschnitt}{Abschnitte}
+  \Crefname{section}{Abschnitt}{Abschnitte}
+  \crefname{paragraph}{Abschnitt}{Abschnitte}
+  \Crefname{paragraph}{Abschnitt}{Abschnitte}
+  \crefname{subparagraph}{Abschnitt}{Abschnitte}
+  \Crefname{subparagraph}{Abschnitt}{Abschnitte}
+}{
+  \crefname{section}{Sect.}{Sect.}
+  \Crefname{section}{Section}{Sections}
+  \crefname{listing}{\lstlistingname}{\lstlistingname}
+  \Crefname{listing}{Listing}{Listings}
+}
+
+
+%Intermediate solution for hyperlinked refs. See https://tex.stackexchange.com/q/132420/9075 for more information.
+\newcommand{\Vlabel}[1]{\label[line]{#1}\hypertarget{#1}{}}
+\newcommand{\lref}[1]{\hyperlink{#1}{\FancyVerbLineautorefname~\ref*{#1}}}
+
+\usepackage{xspace}
+%\newcommand{\eg}{e.\,g.\xspace}
+%\newcommand{\ie}{i.\,e.\xspace}
+\newcommand{\eg}{e.\,g.,\ }
+\newcommand{\ie}{i.\,e.,\ }
+
+%introduce \powerset - hint by http://matheplanet.com/matheplanet/nuke/html/viewtopic.php?topic=136492&post_id=997377
+\DeclareFontFamily{U}{MnSymbolC}{}
+\DeclareSymbolFont{MnSyC}{U}{MnSymbolC}{m}{n}
+\DeclareFontShape{U}{MnSymbolC}{m}{n}{
+  <-6>    MnSymbolC5
+  <6-7>   MnSymbolC6
+  <7-8>   MnSymbolC7
+  <8-9>   MnSymbolC8
+  <9-10>  MnSymbolC9
+  <10-12> MnSymbolC10
+  <12->   MnSymbolC12%
+}{}
+\DeclareMathSymbol{\powerset}{\mathord}{MnSyC}{180}
+
+\ifluatex
+\else
+  % Enable copy and paste - also of numbers
+  % This has to be done instead of \usepackage{cmap}, because it does not work together with cfr-lm.
+  % See: https://tex.stackexchange.com/a/430599/9075
+  \input glyphtounicode
+  \pdfgentounicode=1
+\fi
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+%% END COPYING HERE
+
+
+% Add copyright
+% Do that for the final version or if you send it to colleagues
+\iffalse
+  %state: intended|submitted|llncs
+  %you can add "crop" if the paper should be cropped to the format Springer is publishing
+  \usepackage[intended]{llncsconf}
+
+  \conference{name of the conference}
+
+  %in case of "llncs" (final version!)
+  %example: llncs{Anonymous et al. (eds). \emph{Proceedings of the International Conference on \LaTeX-Hacks}, LNCS~42. Some Publisher, 2016.}{0042}
+  \llncs{book editors and title}{0042} %% 0042 is the start page
+\fi
+
+% For demonstration purposes only
+\usepackage[math]{blindtext}
+\usepackage{mwe}
+\usepackage[backend=biber, style=numeric]{biblatex}
+\addbibresource{java.bib}
+
+\begin{document}
+
+\title{Procesos Importantes de la Máquina Virtual de Java}
+
+\author{Laura Pérez Medeiro}
+\institute{Universidad de Alcala}
+
+\maketitle
+
+\abstract{La Máquina Virtual de Java (JVM) es uno de los sistemas de ejecución
+de código más empleados hoy en día. En el mundo de la programación, el esquema
+de ejecución por máquina virtual es uno de los más famosos, ya que este método tiene
+muchas de las ventajas de la ejecucicón en máquinas virtuales, como no estar
+ligado a ningún sistema operativo en particular, a la vez que disfruta de
+características como alta seguridad o buen rendimiento a la hora de ejecutar
+código. Este artículo explorará los procesos más importantes de la JVM y cómo
+esta consigue transformar código Java (y no solo Java) en un programa
+ejecutable.}
+
+\section{¿Qué es Java?}
+Lo primero que se debe tener claro es que Java es un lenguaje de programación y una plataforma informática. Que Java sea una plataforma informática significa que es unsistema que sirve de base para lograr el funcionamiento de módulos hardware o software con los que es compatible.
+%referencia -> https://www.java.com/es/download/faq/whatis_java.xml
+\section{Tecnología Java}
+Dentro de Java existen diferentes tecnologías de desarrollo, cada una enfocada a un fin diferente. Cada  una de las tecnologías de desarrollo del lenguaje Java contiene: la JVM (Java Virtual Machine), donde se ejecuta la aplicación,  y un API de desarrollo de la plataforma, que son las librerías con funcionalidades ofrecidas por Java y las que la aplicación tiene que tener la capacidad de acceder.
+
+Java cuenta con un conjunto de herramientas para el desarrollo de aplicaciones conocidas como JDK (Java Development Kit).
+%referencia -> http://www.manualweb.net/java/tecnologias-java/
+% otra referencia más -> https://es.wikipedia.org/wiki/Plataforma_Java
+
+\section{Máquina virtual}
+%referencias -> https://codigofacilito.com/articulos/jvm-java
+%http://www.sc.ehu.es/sbweb/fisica/cursoJava/fundamentos/introduccion/virtual.htm
+%http://www.sc.ehu.es/sbweb/fisica/cursoJava/fundamentos/introduccion/virtual.htm
+La JVM es el entorno de ejecución de los programas Java, cuya misión principal es garantizar la portabilidad de las aplicaciones de este lenguaje, es decir, que una vez se haya codificado un programa este se pueda ejecutar en diferentes plataformas (esta característica se le conoce como WORA, Write Once Run Everywhere).
+
+El motivo por el que se le denomina máquina virtual se debe a que es como si creara un ordenador virtual que establece las instrucciones (bytecodes) que tal computadora puede ejecutar. Estos bytecodes son un conjunto de instrucciones altamente optimizadas que componen los archivos con extensión .class producidos en el proceso de compilación de los archivos (los archivos que se compilan son aquellos que poseen la extensión .java).
+
+Tras la existencia del archivo .class con las instrucciones en Bytecode es cuando la aplicación puede ser ejecutada en cualquier dispositivo, donde la única diferencia entre unos dispositivos y otros reside en la JVM utilizado (existe una para cada entorno, ya que las arquitecturas y sistemas operativos varían).
+
+JVM, además realiza otra serie de actividades, las cuáles también son de bastante importancia: 
+\begin{itemize}
+    \item Reservar espacio en memoria para los objetos creados
+    \item Liberar la memoria no usada
+    \item Asignar variables a registros y pilas
+    \item Llamadas al sistema huésped para algunas funciones, como puede ser los accesos a los dispositivos
+    \item Vigilar el cumplimiento de las normas de seguridad para las aplicaciones Java. Aunque las propias especificaciones del lenguaje contribuyen a ello, ya que las referencias a los arrays se verifican en tiempo de ejecución, no se pueden manipular directamente los punteros, hay ciertas conversiones prohibidas entre tipos de datos \ldots
+    \item Verificación de los ficheros class. Antes de ejecutar el bytecode este es verificado, es decir, se comprueba que la secuencia de instrucciones que forman el programa es válida además de asegurar que los patrones bits arbitrarios no se pueden utilizar como direcciones.
+\end{itemize}
+%https://www.adictosaltrabajo.com/2015/04/16/byte-code/
+
+\subsection{Arquitectura JVM}
+
+%https://javadesdecero.es/fundamentos/como-funciona-maquina-virtual/
+ Normalmente, dentro de un sistema de tiempo de ejecución (como es JVM) incluye:
+ %http://www.revista.unam.mx/vol.1/num2/art4/
+\begin{itemize}
+    \item Subsistema de carga de clases. Este subsistema se encarga de las siguientes fases: \begin{itemize}
+        \item Carga. Es el proceso de encontrar la representación binaria de una clase ointerfaz con un nombre en concreto y crear una clase o interfaz en base a esa representación binaria.
+
+Hay dos tipos principales de cargadores de clases de la JVM: (1) el
+cargador de clases \textit{bootstrap} y (2) el cargador de clases definido por
+el usuario. El cargador \textit{bootstrap} es, por defecto, el cargador
+estrictamente definido por la especificación estándar de la JVM, y carga los
+archivos según la misma. Por otra parte, el cargador definido por el usuario
+está diseñado para que su implementación pueda ser alterada y carga las clases
+a través de la instancia de \textit{java.lang.Class}.
+
+Normalmente, un cargador de clases guarda la representación binaria de aquello
+que va a cargar antes de que esta haga falta. De esta manera, se puede asegurar
+tenerla preparada para el momento en el que la tenga que emplear, y al tenerla
+cargada pueda mejorar el rendimiento del proceso de cargado. Cabe la pena
+mencionar que si cualquier error se encuentra en las fases iniciales del proceso
+de cargado, la JVM espera hasta que la clase o interfaz que contiene ese error
+sea invocado para reportar la existencia del mismo. Si no se invoca o referencia
+la clase que contiene el error, este podrá persistir y JVM no notificará de su
+existencia, aunque sea consciente de ella.
+
+        \item Enlazado. es el
+proceso en el que se combina una clase o interfaz con el estado de ejecución de
+la JVM para que pueda ser ejecutado.
+
+El proceso empieza con la \textit{verificación} de la clase, que consiste en asegura de que el código siga los criterios sintácticos, además de garantizar que añadirlo al entorno de ejecución no generen ninguna
+disrupción en el estado de la JVM. Este proceso está estrictamente
+definido y estandarizado por la JVM, la especificación sigue siendo lo
+suficientemente flexible como para que esta sea alterada por los diferentes
+implementadores y estos puedan decidir cómo deberían ejecutarse los diferentes
+procesos de enlazado.
+
+Otros procesos que ocurren durante la fase de enlazado son las excepciones
+debidas a la extensiva lista de casos indeseados que la JVM especifica. La máquina virtual de Java completa
+estas comprobaciones desde el principio y se asegura que pequeños errores no
+detectados desde un buen comienzo no hagan que el programa vaya a
+\textit{crashear}. También se hacen diferentes comprobaciones para asegurarse
+que la estrucutra de los datos binarios se alinean con el formato esperado.
+Aunque haya múltiples verificaciones a lo largo de los diferentes pasos,
+generalmente se considera que los procesos de verificación empiezan realmente en
+la fase de enlazado.
+
+        \item Inicialización. Consiste en la ejecución de el método de inicialización de una clase o interfaz.  El proceso comienza con
+la inicialización de las variables de clase con los valores especificados. Esto
+significa que las variables de clase son inicializadas por medio de alguna
+rutina de inicialización escrita por el programador. También hay que tener en
+cuenta la inicialización de las superclases si estas no lo hubieran sido con
+anterioridad. 
+    \end{itemize}
+    \item Motor de ejecución (Execution Engine). Se encarga de la ejecución de instrucciones contenidas en los bytecodes. Se puede clasificar en: 
+        \begin{itemize}
+            \item Intérprete: interpreta cada una de las líneas del bytecode para luego ejecutarlas.
+            \item Compilador Just-In-Case (JIT): usado para mejorar la eficiencia del intérprete, compila todo el bytecode y lo modifica a código nativo. De esta forma cuando el intérprete vea llamadas a métodos repetidos, JIT proporcione el nativo directo de esa parte (así no es necesario reinterpretarlo).
+            \item Recolector de basura (Garbage Collector): se encarga de eliminar todos los objetos que en ese momento no dispongan de referencias.
+        \end{itemize}
+    \item Manejador de memoria. Java utiliza un modelo conocimo como \textit{automatic storage management} en el que el sistema en tiempo de ejecución mantiene un seguimiento de los objetos. En cuanto estos objetos no son referenciados, se libera automáticamente la memoria asiciada con ellos. Esto se puede implementar de muchas maneras como se explicará posteriormente.
+    \item Manejador de errores y excepciones. Todas las excepciones en Java son instancias de la clase \textit{java.lang.Throwable} ( \textit{java.lang.Exception} y \textit{java.lang.Error} heredan directamente de esta). Cuando se produce una excepcion el \textit{handler} de errores y excepciones busca un manejador para esta excepción, emprezando por el método que la originó y continuando con el resto siguiendo la pila de llamadas hasta encontrarlo. Lo que ocurre después de atrapar la excepción y ejecutar el manejador asociado depende del código de este. Si no se encuentra un manejador para la excepción, se lanza el manejador del sistema que suele terminar la ejeción e imprimir el programa.
+    \item Soporte de métodos nativos. Dentro de las clases en Java se pueden encontrar métodos no implmentados por los bytecode de Java, sino por algún otro lenguaje compilado en código nativo y almacenado en bibliotecas de enlace dinámico. Por lo que la JVM debe incluir el código para cargar y ejecutar dinámicamente el código nativo que implementa tales métodos.
+    \item Interfaz multihilos. Hay dos instrucciones relacionadas directamente con los hilos \textit{monitorenter} y \textit{monitorexit} que deben ejecutarse en exclusión mútua y definen secciones de código. El resto del soporte de los hilos se realiza mediante la clase \textit{java.lang.Thread},
+    \item Administrador de seguridad. Cada JVM puede definir sus propias plíticas de seguridad mediante los administradores de seguridad (implementados por la clase \textit{java.lang.SecurityManager}, los cuales protegen al sistema de tiempo de ejecución definiendo el ámbito de cada programa en cuanto a la capacidad de acceder a ciertos recursos, etc. El modelo original de seguridad dado por Java es conocido como \textit{sandbox} y consiste en proporcionar un ambiente de ejecución altamente restrictivo para código no fiable obtenido de la red. 
+\end{itemize}
+
+\subsection{Recolector de Basura (\textit{GC, Garbage Collector}
+% https://ayddup.wordpress.com/2011/08/08/la-memoria-en-java-garbage-collector-y-el-metodo-finalize/
+La memoria de la JVM se encuentra dividida en tres secciones diferentes: (1) zona de datos, donde se almacenan las instrucciones, clases, métodos y constantes (salvo los de tipo \textit{final}); (2) Stack, es definida en tiempo de compilación y permanece estática a lo largo de la ejecución, en esta zona se encuentra las instancias de los objetos además de los datos primitivos y (3) Heap, que es la zona de memoria dinámica que almacena los objetos creados. 
+
+Una vez se tienen claros esos conceptos, es más fácil entender el Recolector de Basura de Java. Un GC es un proceso que tiene asignado baja prioridad y el cual se encarga de gestionar el Heap, liberando de manera automática la memoria ocupada por los objetos que no se van a utilizar. Existen multitud de algoritmos diferentes para llevar a cabo este proceso, entre los que podemos encontrar:
+%http://bibing.us.es/proyectos/abreproy/11320/fichero/Capitulos%252F10.pdf
+\begin{itemize}
+    \item Recolectores de traza (trazing collectors). Recorren el grafo (comenzando en las raíces) y van marcando los objeto, al acabar, se eliminan los objetos que no han sido marcados. Aquí encontramos:
+    \begin{itemize}
+        \item Recolector de marcas (Mark-Sweep collection). Es el algoritmo básico de trazado y consiste en examinar las variables del programa en ejecución  y cualquier bloque de memoria que sea referenciado  en  algún  momento  se añade a  una  lista  de  objetos  a  examinar.  Para  cada  uno  de  los  objetos  presentes  en  la  lista  se  fija  una  bandera en  el  bloque que indique  que aún está siendo referenciada, por lo que no se debe eliminar de memoria. Ademá,s se añade  a  la  lista  cualquier  otro  objeto  que  contenga  referencias  a  estos  plos   añadidos  y  que  no  hayan  sido  marcados  aún. Así todos  los  objetos accesibles desde el entorno de ejecución del programa quedan marcados.En una segunda fase, el colector examina la memoria en busca de segmentos que no han sido marcados. Si encuentra alguno lo devuelve al ubicador para que vuelva a usarlo. 
+        \item Recolector de copias (Copying collection). Es una técnica muy potente que puede utilizarse en combinación con otros algoritmo, esta técnica permite solventar problemas ocurridos tras el alojamiento y liberación de múltiples bloques de memoria.
+        \item Recolector incremental (Incremental collection). Es una técnica que permite al recolector de basura ser ejecutado en una serie de fases de pequeña duración, para ello hace uso deun porgrama llamado \textit{mutator} que se encarga de alojar o modificar los bloques de memoria determinados por el colector.
+        \item Recolector conservador (Conservative collection).
+    \end{itemize}
+\end{itemize}
+
+\subsection{Características importantes}
+Como ya mencionó al principio de este artículo, el uso de ejecución en base a
+máquina virtual para lenguajes de programación tiene tanto sus ventajas como
+desventajas. Esta sección se comentarán y analizarán las características más
+importantes de la máquina virtual de Java.
+
+\subsubsection*{Independencia de plataforma.}
+Una de las características más importantes de la máquina virtual de Java es su
+extrema independencia de la plataforma en la que se ejecuta, como ya se ha comentado anteriormente. 
+
+
+\subsubsection*{Seguridad.}
+Este apartado ha sido comentado brevemente anteriormente, sin embargo, aquí se pretende ahondar en el tema.
+
+JVM hace escaneos exhaustivos del bytecode que va a ejecutar
+para poder asegurar que no contiene ninguna instrucción potencialmente
+maliciosa o no segura, como acceso a lugares restringidos dentro de la memoria,
+operaciones privilegiadas, etc.\ También hay una serie de reglas que ningún
+programa puede romper mientras se ejecuta, lo que consigue un nivel de seguridad
+superior: en el caso de que se lograra superar las revisiones de pre-ejecución, es
+prácticamente seguro que se capture el error en tiempo de ejecución. Esto es
+especialmente efectivo para la prevención de errores relacionados con la
+corrupión de memoria.
+
+También está prohibido la realización de aritmética de punteros y la revonversión (\textit{casting}) de
+variables sin comprobar previamente que este funcione. Tampoco se permite la
+reserva y liberación de memoria de manera manual, lo que obligará al usuario del lenguaje ha hacer uso del recolector de basura por defecto para esas labores.
+
+\subsubsection*{Velocidad}
+El hecho de emplear una máquina virtual es a la vez ventaja y desventaja para
+Java. En el aspecto velocidad, cualquier máquina virtual será más lenta que un
+lenguaje compilado directamente, por definición. Aunque esto no significa que la JVM
+sea radicalmente más diferente que los lenguajes basados en C.
+
+En los inicios, los tiempos de ejecución y rendimiento eran factores
+de alta preocupación entre sus usuarios. Desde entonces, las diferentes
+versiones y optimizaciones han conseguido que, aunque Java sea un lenguaje, los lengujes como C le saquen muy poca ventaja
+respecto a tiempos de ejecución. De hecho, Java sigue siendo uno de los
+lenguajes con mayor rendimiento en la actualidad.
+
+
+\subsubsection*{Imposibilidad de cambiar características definidas por el sistema}
+La máquina virtual es muy flexible a la hora de adaptarse al sistema y a la
+arquitectura en la que esta se ejecute. Aún así, hay ciertas características por
+defecto de estos que simplemente no se pueden cambiar. Un ejemplo muy claro se encuentra en las interfaces gráficas de usuario:pese a  que la JVM defina un
+\textit{look and feel} predeterminados, si el sistema operativo fuerza su propia
+interfaz a todos los programas, JVM no tendrá más opción que obedecer y ser ejecutado
+con tales parámetros.
+
+
+\newpage
+\printbibliography
+
+\end{document}
