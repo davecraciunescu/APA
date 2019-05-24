@@ -5,6 +5,11 @@
 *.cubin
 *.fatbin
 *.swp
+*.aux
+*.bcf
+*.blg
+*.out
+*.upa
 
 *.class
 
