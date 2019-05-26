@@ -94,7 +94,8 @@ se acepta: .NET, Java, Python y Android; pero por elección del desarrollador de
 este apartado se ha decidido emplear Node.js.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/4-3-1_send_simulated_telemetry.png}
+ \centering
+ \includegraphics[width=0.6\textwidth]{./IoT/MicrosoftAzure/4-3-1_send_simulated_telemetry.png}
  \caption{Descarga de Node.js desde el sitio web oficial.}
  \label{downloadnode}
 
@@ -131,7 +132,8 @@ artesanos; al ser el desarrollador que replique este proceso el que de forma y
 esculpa el funcionamiento del dispositivo).
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/1-1_create_resource.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/MicrosoftAzure/1-1_create_resource.png}
  \caption{Inicio del proceso de creación de recurso: asignación de Grupo y
  Nombre.}
  \label{createresource}
@@ -152,7 +154,8 @@ escala, cabe añadir que se encuentran los siguientes tipos:
 \end{easylist}
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/1-2_create_resource.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/MicrosoftAzure/1-2_create_resource.png}
  \caption{Seleccionar tamaño y escalabilidad}
  \label{sizescale}
 \end{figure}
@@ -160,7 +163,8 @@ escala, cabe añadir que se encuentran los siguientes tipos:
 Se puede pasar a revisar y crear la unidad IoT Hub \hyperref[review]{\ref{review}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/1-3_create_resource.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/MicrosoftAzure/1-3_create_resource.png}
  \caption{Revisión y Creación.}
  \label{review}
 \end{figure}
@@ -190,7 +194,8 @@ Cloud.
 Al ejecutar queda la siguiente traza \hyperref[register]{\ref{register}}:
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/3-1_register_device.png}
+ \centering
+ \includegraphics[width=0.8\textwidth]{./IoT/MicrosoftAzure/3-1_register_device.png}
  \caption{Registro del dispositivo.}
  \label{register}
 \end{figure}
@@ -201,7 +206,7 @@ dispositivo. Una vez más, se debe ejecutar en la consola un comando:
 \begin{equation}
  \label{condevcommand}
  az iot hub device-identity show-connection-string --hub-name YourIoTHubName 
- --device-id MyNodeDevice --output table
+  --device-id MyNodeDevice --output table
 \end{equation}
 
 Una vez más, se sustituye YourIoTHubName por Hefesto, que es al que se quiere
@@ -210,7 +215,8 @@ guardarse \hyperref[constring]{\ref{constring}} para, posteriormente, poder
 realizar la conexión con el disposito.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/3.2_register_device.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/MicrosoftAzure/3.2_register_device.png}
  \caption{Conexión con el dispositivo.}
  \label{constring}
 \end{figure}
@@ -231,11 +237,12 @@ Todo lo hecho anteriormente está muy bien y tal\ldtos, pero no es una
 Para ello se debe abrir una terminal local, e ir al directorio donde se ha
 descargado, en este caso, el ejemplo del repositorio Git proporcionado
 anteriormente en este documento. Se debe entrar al directorio
-\textit{iot-hub\\Quickstarts\\simulated-device}
+\textit{iot-hub/Quickstarts/simulated-device}
 \hyperref[directory]{\ref{directory}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/4-1_send_simulated_telemetry.png}
+ \centering
+ \includegraphics[width=0.8\textwidth]{./IoT/MicrosoftAzure/4-1_send_simulated_telemetry.png}
  \caption{Conexión con el dispositivo.}
  \label{directory}
 \end{figure}
@@ -245,7 +252,8 @@ Debe sustituirse el contenido de \textit{connectionString}
 \hyperref[condevcommand]{\ref{condevcommand}} en el archivo SimulatedDevice.js.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/4-2_send_simulated_telemetry.png}
+ \centering
+ \includegraphics[width=\textwidth]{./IoT/MicrosoftAzure/4-2_send_simulated_telemetry.png}
  \caption{Cadena de conexión del dispositivo.}
  \label{codestring}
 \end{figure}
@@ -263,7 +271,8 @@ node SimulatedDevice.js
 \end{equation}
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/4-4_send_simulated_telemetry.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/MicrosoftAzure/4-4_send_simulated_telemetry.png}
  \caption{Instalación de paquetes necesarios para la ejecución.}
  \label{npmdev}
 \end{figure}
@@ -273,7 +282,8 @@ El resultado de la ejecución da el siguiente resultado
 los mensajes enviados por el disposito.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/4-5_send_simulated_telemetry.png}
+ \centering
+ \includegraphics[width=\textwidth]{./IoT/MicrosoftAzure/4-5_send_simulated_telemetry.png}
  \caption{Conexión con el dispositivo.}
  \label{nodedev}
 \end{figure}
@@ -285,11 +295,12 @@ Pero no solo hay que mandar datos, también hay que ser capaz de leerlos. En est
 apartado se explica como crear un proceso que tome los datos del dispositivo,
 desde IoT Hub, y los lea. Para ello hace falta otra instancia de la terminal
 local. En este caso, en lugar de la ruta \textit{simulated-device}, se accede a
-la ruta \textit{iot-hub\\Quickstart\read-d2c-messages}
+la ruta \textit{iot-hub/Quickstart/read-d2c-messages}
 \hyperref[directoryreader]{\ref{directoryreader}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/5-1_read_telemetry.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/MicrosoftAzure/5-1_read_telemetry.png}
  \caption{Lectura de datos del dispositivo.}
  \label{directoryreader}
 \end{figure}
@@ -301,7 +312,8 @@ el contenido de \textit{connectionString} debe sustituirse
 conexión de servicio \hyperref[consercommand]{\ref{consercommand}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/5-1_read_telemetry.png}
+ \centering
+ \includegraphics[width=0.6\textwidth]{./IoT/MicrosoftAzure/5-1_read_telemetry.png}
  \caption{Cadena de conexión a servicio.}
  \label{codestringser}
 \end{figure}
@@ -318,7 +330,8 @@ El resultado de la ejecución del comando anterior
 (\hyperref[ejecdev3]{\ref{ejecdev3}}) puede observarse en la captura 
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/MicrosoftAzure/5-4_read_telemetry.png}
+ \centering
+ \includegraphics[width=0.9\textwidth]{./IoT/MicrosoftAzure/5-4_read_telemetry.png}
  \caption{Cadena de conexión a servicio.}
  \label{nodeser}
 \end{figure}
@@ -338,7 +351,8 @@ documentación recomienda \textit{Norte de Virgina}).
 Para seguir con el proceso, se debe buscar por \textit{IoT Core} 
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/1-2_search_iot_core.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/1-2_search_iot_core.png}
  \caption{Búsqueda de servicio IoT Core.}
  \label{search}
 \end{figure}
@@ -348,7 +362,8 @@ contextual del marguen izquierdo se debe pulsar en la pestaña de políticas,
 dentro de Seguro \hyperref[policies]{\ref{policies}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/1-3_politics.png}
+ \centering
+ \includegraphics[width=0.7]{./IoT/AWS/1-3_politics.png}
  \caption{Selección de opción de Políticas.}
  \label{policies}
 \end{figure}
@@ -372,7 +387,8 @@ En las declaraciones que se encuetran debajo del nombre debe escribirse:
 Por último, se crea la política \hyperref[newpolicy]{\ref{newpolicy}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/1-4_create_policy.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/1-4_create_policy.png}
  \caption{Creación de una nueva política.}
  \label{newpolicy}
 \end{figure}
@@ -386,7 +402,8 @@ De vuelta a la consola de administración de AWS, es necesario buscar por
 \textit{IoT Device Management} y seleccionarlo \hyperref[search2]{\ref{search2}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/2-1_search.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/2-1_search.png}
  \caption{Búsqueda de servicio IoT Device Management.}
  \label{search2}
 \end{figure}
@@ -412,7 +429,8 @@ A continuación se debe rellenar la información del desplegable.
 \end{easylist}
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/2-2_name.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/2-2_name.png}
  \caption{Creación de objeto, nombramiento.}
  \label{name}
 \end{figure}
@@ -431,7 +449,8 @@ El último de los anteriormente mencionados, permite obtener la clave RSA de 204
 bits.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/2-3_certificate.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/2-3_certificate.png}
  \caption{Creación y descarga de certificados.}
  \label{certificate}
 \end{figure}
@@ -444,7 +463,8 @@ ha creado con anterioridad: \textit{PlantWateringPolicy} y se ``Registra
 objeto'' \hyperref[assignmentpolicy]{\ref{assignmentpolicy}}
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/2-4_policy.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/2-4_policy.png}
  \caption{Asignación de política.}
  \label{assignmentpolicy}
 \end{figure}
@@ -471,7 +491,8 @@ En la parte superior, donde pone ``Tema de suscripción'' se deben pegar una a
 una las rutas copiadas anteriormente \hyperref[suscription]{\ref{suscription}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/3-1_suscription.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/3-1_suscription.png}
  \caption{Suscripción a tema.}
  \label{suscription}
 \end{figure}
@@ -485,7 +506,8 @@ usado en el ejemplo seguido para llevar a cabo esta práctica
 \hyperref[insertion]{\ref{insertion}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/3-2_insertion.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/3-2_insertion.png}
  \caption{Inserción de datos dentro de un tema.}
  \label{insertion}
 \end{figure}
@@ -503,7 +525,8 @@ datos provenientes de ``update'' tras cada publicación de un nuevo tema
 \hyperref[accepted]{\ref{accepted}}.
 
 \begin{figure}[h!]
- \includegraphics[width=\linewidth]{./IoT/AWS/3-3_accepted.png}
+ \centering
+ \includegraphics[width=0.7\textwidth]{./IoT/AWS/3-3_accepted.png}
  \caption{Datos recibidos tras una publicación de tema.}
  \label{accepted}
 \end{figure}
