@@ -1,0 +1,8 @@
+CREATE DEVICE IDENTITY
+HostName=Hefesto.azure-devices.net;DeviceId=MyNodeDevice;SharedAccessKey=8yj2ayIR4pYyuWGTO+qZciUlHfI5B08Zk6CdLiakoLM=
+
+DDEVICE CONNECTION STRING
+HostName=Hefesto.azure-devices.net;DeviceId=MyNodeDevice;SharedAccessKey=8yj2ayIR4pYyuWGTO+qZciUlHfI5B08Zk6CdLiakoLM=
+
+SERVICE CONNECTION STRING
+HostName=Hefesto.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=sNGBY9EK4uRKaPqmsxRKINXzrR+8W5rsUg/+4Px3yss=

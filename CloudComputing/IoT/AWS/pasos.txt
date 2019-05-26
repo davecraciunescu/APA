@@ -1,0 +1,12 @@
+1. Seleccionar "Conecte un dispositivo IoT"
+2. Pulsar "Introducción" en la ventana que aparece explicativa
+3.
+ 3.1 - Observar el menú y pulsar para crear tipo
+ 3.2 - Crear tipo
+ 3.3 - Dar nombre a objeto
+  3.2.1 - AWS da la opción de dar atributos o etiquetas en cada objeto creado 
+          para contar con una mayor facilidad de búsqueda
+ 3.4 - Pulsar "Crear objeto"
+4. Objeto creado, da opción de crear más o seleccionar lo existente
+5. Pultar objeto y ver info
+	
