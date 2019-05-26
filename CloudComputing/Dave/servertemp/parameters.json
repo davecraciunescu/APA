@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "westeurope"
+        },
+        "networkInterfaceName": {
+            "value": "server166"
+        },
+        "networkSecurityGroupName": {
+            "value": "server-nsg"
+        },
+        "networkSecurityGroupRules": {
+            "value": []
+        },
+        "subnetName": {
+            "value": "default"
+        },
+        "virtualNetworkId": {
+            "value": "/subscriptions/ab27051c-e08c-43d1-83c4-9795d0330692/resourceGroups/Individual/providers/Microsoft.Network/virtualNetworks/Individual-vnet"
+        },
+        "publicIpAddressName": {
+            "value": "server-ip"
+        },
+        "publicIpAddressType": {
+            "value": "Dynamic"
+        },
+        "publicIpAddressSku": {
+            "value": "Basic"
+        },
+        "virtualMachineName": {
+            "value": "server"
+        },
+        "virtualMachineRG": {
+            "value": "Individual"
+        },
+        "osDiskType": {
+            "value": "Premium_LRS"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_B1ls"
+        },
+        "adminUsername": {
+            "value": "dave"
+        },
+        "adminPassword": {
+            "value": null
+        },
+        "diagnosticsStorageAccountName": {
+            "value": "individualdiag"
+        },
+        "diagnosticsStorageAccountId": {
+            "value": "/subscriptions/ab27051c-e08c-43d1-83c4-9795d0330692/resourceGroups/Individual/providers/Microsoft.Storage/storageAccounts/individualdiag"
+        }
+    }
+}
