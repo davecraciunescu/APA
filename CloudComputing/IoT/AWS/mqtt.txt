@@ -1,0 +1,8 @@
+Actualizar a esta sombra de dispositivo
+$aws/things/Hefestus/shadow/update
+
+Obtener esta sombra de dispositivo
+$aws/things/Hefestus/shadow/get
+
+Aceptar esta sombra de dispositivo
+$aws/things/Hefestus/shadow/get/accepted
