@@ -1,0 +1,51 @@
+###############################################################################
+
+Para compilar el .tex con exito se debe usar:
+pdflatex --shell-escape nombre_archivo
+
+###############################################################################
+
+El codigo se debe encontrar en un {minted}
+
+La forma mas bonita de hacerlo es:
+
+\begin{listing}
+\centering
+    \begin{minted}{AQUI VA LA SINTAXIS DE TU CODIGO}
+
+    // TU CODIGO //
+
+    \end{minted}
+\caption{Menos de 8 palabras que describan esa captura.}
+\label{GRUPO:NOMBRE}
+\end{listing}
+
+===== EJEMPLO ====
+
+\begin{listing}
+\centering
+    \begin{minted}{python}
+
+    def ejemplo(self, x, y):
+
+        return self.valor + x + y
+
+    \end{minted}
+\caption{Suma de parametros con valores de clase}
+\label{py:parametros}
+\end{listing}
+
+###############################################################################
+
+La bibliografia se hace con BibTex, a mano es lo mas cutre que exite.
+
+Abrid el archivo paper.bib y encontrareis ejemplos que ha metido Pablo ahi.
+
+###############################################################################
+
+Entre cada secci'on va a ir un \newpage, as'i que aseguraos de que vuestras
+fotos quedan perfectamente dentro de vuestra propia secci'on. Va a ser el mismo
+archivo, pero como si no lo fuera.
+
+###############################################################################
+
